@@ -1,0 +1,2755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080e1c" />
+  <title>PIXEL PLAY — 게임 모음</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080e1c;
+      --panel: #111b30;
+      --panel-soft: #0e1729;
+      --border: #263651;
+      --text: #f1f5ff;
+      --muted: #93a4c1;
+      --cyan: #52e3f5;
+      --violet: #a48bff;
+      --range-progress: 44%;
+      --wood: #d6ac6c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 15% 5%, #16264b 0%, transparent 40%),
+        radial-gradient(ellipse at 85% 100%, #1e1941 0%, transparent 36%),
+        var(--bg);
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+    .container { max-width: 1190px; padding: 28px 22px 56px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 27px; }
+    .brand { display: flex; align-items: center; gap: 13px; font-weight: 900; letter-spacing: 0.035em; font-size: 23px; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; color: #0c1730; border-radius: 12px; background: linear-gradient(135deg, var(--cyan), var(--violet)); box-shadow: 0 0 25px #52e3f532; }
+    .brand small { font-size: 10px; display: block; color: var(--muted); letter-spacing: .25em; font-weight: 700; margin-top: 2px; }
+    .header-badge { font-size: 12px; color: var(--cyan); border: 1px solid #2c6473; background: #123143; border-radius: 99px; padding: 8px 13px; font-weight: 800; }
+    .intro { margin: 0 0 22px; }
+    .intro .eyebrow { color: var(--cyan); font-size: 11px; font-weight: 850; letter-spacing: .25em; margin: 0 0 9px; }
+    .intro h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1.18; letter-spacing: -.04em; }
+    .intro p { color: var(--muted); margin: 10px 0 0; font-size: 14px; line-height: 1.7; }
+    .layout { display: grid; grid-template-columns: 220px minmax(340px, 1fr) 252px; gap: 18px; align-items: start; }
+    .panel { border: 1px solid var(--border); border-radius: 19px; background: linear-gradient(180deg, #142039, #10182a); box-shadow: 0 14px 38px #0207114a; }
+    .sidebar, .stats-panel { padding: 20px; }
+    .section-label { margin: 0 0 16px; color: #b1c0dd; font-size: 12px; font-weight: 850; letter-spacing: .12em; }
+    .game-choice { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border-radius: 13px; border: 1px solid #346d83; background: linear-gradient(110deg, #164053, #262d59); color: white; padding: 13px 11px; }
+    .game-choice .icon { background: #ffffff19; border-radius: 10px; width: 37px; height: 37px; display: grid; place-items: center; font-size: 22px; }
+    .game-choice strong { font-size: 14px; }
+    .game-choice small { display: block; color: #a5d5dc; font-size: 10px; margin-top: 3px; }
+    .future-slot { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 13px 10px; border: 1px dashed #33415d; color: #7e8eaa; border-radius: 12px; font-size: 12px; }
+    .future-slot span:first-child { font-size: 21px; }
+    [hidden] { display: none !important; }
+    .game-choice { background: #182641; border-color: #33415d; margin-bottom: 10px; }
+    .game-choice[aria-current="page"] { border-color: #346d83; background: linear-gradient(110deg, #164053, #262d59); }
+    .game-choice:not([aria-current="page"]):hover { background: #27395d; }
+    .game-choice:not([aria-current="page"]) small { color: #a4b5d2; }
+    .sidebar-hint { border-top: 1px solid #293854; color: var(--muted); line-height: 1.7; font-size: 12px; padding-top: 17px; margin: 22px 0 0; }
+    .game-panel { padding: 18px; }
+    .game-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 3px 16px; }
+    .game-title { margin: 0; font-size: 21px; letter-spacing: -.02em; }
+    .game-title small { display: block; margin-bottom: 5px; font-size: 10px; color: var(--cyan); letter-spacing: .15em; font-weight: 900; }
+    .status { color: #6de6c5; font-weight: 750; font-size: 12px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .status::before { content: ""; width: 7px; height: 7px; background: currentColor; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+    .game-board-wrap { position: relative; width: min(100%, 312px); margin: 0 auto; padding: 6px; background: linear-gradient(145deg, #3a527a, #202e4f); border-radius: 11px; box-shadow: 0 0 40px #53a4ff12; }
+    #board { width: 100%; aspect-ratio: 1/2; height: auto; display: block; background: #080f1d; border-radius: 5px; }
+    .overlay { position: absolute; inset: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: #070d1de0; border-radius: 5px; backdrop-filter: blur(3px); padding: 18px; }
+    .overlay[hidden] { display: none; }
+    .overlay-symbol { font-size: 40px; margin-bottom: 12px; }
+    .overlay h3 { margin: 0 0 8px; font-size: 23px; }
+    .overlay p { margin: 0; max-width: 225px; color: #becbe2; line-height: 1.7; font-size: 13px; }
+    .game-actions { display: flex; gap: 9px; justify-content: center; margin-top: 17px; }
+    .action { padding: 11px 15px; border-radius: 11px; border: 1px solid #3c5276; background: #21314d; color: #e5f1ff; font-weight: 800; font-size: 12px; min-width: 108px; transition: transform .15s, background .15s; }
+    .action:hover { transform: translateY(-2px); background: #2c4161; }
+    .action.primary { color: #061729; background: linear-gradient(135deg, var(--cyan), #7f9bff); border: 0; }
+    .touch-controls { display: none; gap: 9px; justify-content: center; margin-top: 17px; user-select: none; }
+    .touch-controls button { flex: 1; max-width: 75px; min-height: 52px; border: 1px solid #415a7c; background: #223455; border-radius: 12px; color: #e4f4ff; font-size: 21px; font-weight: 900; touch-action: none; }
+    .touch-controls button:active { background: #37617c; transform: scale(.96); }
+    .touch-caption { display: none; font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-box { border: 1px solid #2b3c5a; border-radius: 12px; background: #0d1729; padding: 12px 10px; }
+    .stat-box span { font-size: 10px; color: var(--muted); font-weight: 750; }
+    .stat-box strong { font-size: 24px; letter-spacing: -.04em; display: block; margin-top: 5px; font-variant-numeric: tabular-nums; }
+    .stat-box .accent { color: var(--cyan); }
+    .next-section { margin-top: 24px; }
+    .next-wrap { background: #0b1527; border: 1px solid #2b3c5a; border-radius: 12px; display: grid; place-items: center; height: 112px; }
+    #next { width: 104px; height: 104px; display: block; }
+    .speed-section { border-top: 1px solid #293854; margin-top: 20px; padding-top: 21px; }
+    .speed-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .speed-header .section-label { margin: 0; }
+    .speed-value { font-size: 12px; font-weight: 850; color: var(--cyan); }
+    input[type="range"] { width: 100%; height: 7px; border-radius: 10px; margin: 5px 0; cursor: pointer; appearance: none; background: linear-gradient(to right, #51e4f4 var(--range-progress), #34445f var(--range-progress)); }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; background: white; border: 4px solid #52e3f5; box-shadow: 0 0 0 3px #52e3f520; }
+    input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; border-radius: 50%; background: white; border: 4px solid #52e3f5; }
+    .speed-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 7px; }
+    .controls-section { border-top: 1px solid #293854; margin-top: 21px; padding-top: 21px; }
+    .keyboard-row { display: flex; align-items: center; justify-content: space-between; margin: 11px 0; gap: 10px; }
+    .keyboard-row span { color: #adbdd8; font-size: 12px; }
+    .keys { display: flex; gap: 4px; }
+    kbd { min-width: 24px; padding: 5px 6px; text-align: center; background: #21314b; border: 1px solid #405372; box-shadow: inset 0 -2px #132039; color: #eff5ff; border-radius: 5px; font-family: inherit; font-weight: 800; font-size: 10px; }
+    .bottom-note { margin: 22px auto 0; color: #7e91b1; font-size: 11px; text-align: center; line-height: 1.6; }
+    .omok-board-wrap { margin: 0 auto; width: min(100%, 600px); background: #d1a66d; border: 8px solid #6f4b2c; border-radius: 13px; overflow: hidden; box-shadow: inset 0 0 20px #0003, 0 12px 28px #0005; }
+    #omokBoard { width: 100%; height: auto; aspect-ratio: 1; display: block; touch-action: manipulation; cursor: crosshair; }
+    .omok-message { border: 1px solid #304668; border-radius: 10px; background: #0c182d; color: #d7e8ff; padding: 13px; font-size: 13px; line-height: 1.6; text-align: center; margin: 14px 0 0; min-height: 48px; }
+    .omok-message.warning { border-color: #956c41; background: #302317; color: #ffe5a9; }
+    .omok-message.win { border-color: #39bca5; background: #133c3b; color: #a1ffe5; }
+    .omok-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin-top: 13px; }
+    .omok-actions button { min-width: 105px; }
+    .omok-info p { color: #aebeda; font-size: 12px; line-height: 1.7; margin: 11px 0 0; }
+    .omok-info a { color: #81dce9; text-decoration: underline; text-underline-offset: 3px; }
+    .config-label { color: #b1c0dd; font-size: 12px; display: block; font-weight: 800; margin: 12px 0 7px; }
+    .config-select { width: 100%; border: 1px solid #425475; background: #0e1b31; color: #f2f6ff; padding: 10px 9px; border-radius: 9px; outline-offset: 3px; font-size: 12px; }
+    .choice-box { border-radius: 14px; border: 1px solid #68a9c2; background: #132b42; padding: 15px; margin: 13px 0; }
+    .choice-box h3 { font-size: 15px; margin: 0 0 7px; }
+    .choice-box p { color: #c2d4e9; font-size: 12px; line-height: 1.65; margin: 0 0 12px; }
+    .choice-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .choice-buttons button { min-width: 96px; flex: 1; }
+    .omok-moves { font-size: 12px; color: #c7d7ee; line-height: 1.9; max-height: 160px; overflow: auto; overflow-wrap: anywhere; }
+    .omok-key { color: #79d8e6; font-weight: 800; }
+    .omok-badge { padding: 5px 9px; border: 1px solid #466485; background: #192d49; border-radius: 99px; color: #c6d8f0; font-size: 11px; white-space: nowrap; }
+    .omok-legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; color: #b6cce0; margin: 10px 0 2px; font-size: 11px; }
+    .omok-dot { display:inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -2px; margin-right: 5px; border: 1px solid #ffffff88; }
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: minmax(320px, 1fr) 252px; }
+      .sidebar { grid-column: 1 / -1; display: flex; align-items: center; gap: 13px; padding: 13px 16px; }
+      .sidebar .section-label { margin: 0 2px 0 0; white-space: nowrap; }
+      .game-choice { max-width: 190px; margin-bottom: 0; }
+      .future-slot { margin: 0; }
+      [hidden] { display: none !important; }
+    .game-choice { background: #182641; border-color: #33415d; margin-bottom: 10px; }
+    .game-choice[aria-current="page"] { border-color: #346d83; background: linear-gradient(110deg, #164053, #262d59); }
+    .game-choice:not([aria-current="page"]):hover { background: #27395d; }
+    .game-choice:not([aria-current="page"]) small { color: #a4b5d2; }
+    .sidebar-hint { display: none; }
+    }
+    @media (max-width: 660px) {
+      .container { padding: 18px 12px 35px; }
+      .brand { font-size: 19px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .header-badge { font-size: 10px; padding: 7px 10px; }
+      .intro h1 { font-size: 27px; }
+      .layout { display: flex; flex-direction: column; gap: 13px; }
+      .sidebar, .game-panel, .stats-panel { width: 100%; }
+      .sidebar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; gap: 9px; }
+      .sidebar > .section-label { grid-column: 1 / -1; margin: 0; }
+      .future-slot { display: none; }
+      .game-choice { min-width: 0; max-width: none; margin: 0; padding: 10px 8px; gap: 8px; }
+      .game-choice .icon { flex: 0 0 30px; width: 30px; height: 30px; }
+      .game-choice strong { font-size: 12px; }
+      .game-choice small { font-size: 9px; }
+      #omokInfo { display: block; }
+      #omokInfo .config-label { margin-top: 14px; }
+      #omokInfo .controls-section { margin-top: 20px; }
+      #omokInfo .stat-grid { margin-top: 12px; }
+      .omok-board-wrap { border-width: 6px; }
+      .game-board-wrap { max-width: 290px; }
+      .touch-controls, .touch-caption { display: flex; }
+      .touch-caption { display: block; }
+      .stats-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .stats-panel > .section-label, .stats-panel > .stat-grid { grid-column: 1 / -1; }
+      .stats-panel > .section-label { margin: 0 0 -6px; }
+      .next-section, .speed-section, .controls-section { margin: 0; padding: 0; border: 0; }
+      .controls-section { grid-column: 1 / -1; border-top: 1px solid #293854; padding-top: 15px; }
+      .next-wrap { height: 105px; }
+      .speed-header { min-height: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+    /* GAME 03: CHESS */
+    .chess-board-wrap { width:min(100%,600px); margin:0 auto; border:7px solid #414c65; border-radius:13px; overflow:hidden; box-shadow:0 15px 35px #0005; }
+    .chess-board { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); width:100%; aspect-ratio:1; }
+    .chess-square { position:relative; border:0; border-radius:0; margin:0; padding:0; min-width:0; aspect-ratio:1; font:clamp(24px,4.8vw,51px)/1 "DejaVu Sans","Segoe UI Symbol","Arial Unicode MS",serif; display:grid; place-items:center; cursor:pointer; user-select:none; touch-action:manipulation; }
+    .chess-square.light { background:#f1e3c6; }
+    .chess-square.dark { background:#829a91; }
+    .chess-square.white-piece { color:#fffcef; text-shadow:-1px -1px #222b2d,1px -1px #222b2d,-1px 1px #222b2d,1px 1px #222b2d,0 3px 2px #0006; }
+    .chess-square.black-piece { color:#111821; text-shadow:0 1px 1px #f6ead4cc,0 2px 3px #0007; }
+    .chess-square.last-move { background-image:linear-gradient(#eac64b70,#eac64b70); }
+    .chess-square.selected { background-image:linear-gradient(#f3d14cbb,#f3d14cbb); }
+    .chess-square.legal-dest::after { content:""; position:absolute; width:24%; height:24%; border-radius:50%; background:#2c7555a6; pointer-events:none; }
+    .chess-square.legal-capture::after { content:""; position:absolute; inset:5%; border:5px solid #38a477b0; border-radius:50%; pointer-events:none; }
+    .chess-square.in-check { background-image:radial-gradient(ellipse,#ec4755cc,transparent 75%); }
+    .chess-square:focus-visible { z-index:3; outline:3px solid #ffdf62; outline-offset:-3px; }
+    .chess-square:disabled { cursor:default; }
+    .chess-moves { min-height:24px; max-height:240px; overflow-y:auto; font-size:12px; color:#d6e5fd; }
+    .chess-move-row { display:grid; grid-template-columns:44px 1fr 1fr; gap:10px; padding:8px 10px; background:#0e1a2b; border-bottom:1px solid #26364b; }
+    .chess-move-row:nth-child(even) { background:#17233a; }
+    #chessDrawClaims .action { width:100%; margin:8px 0 0; }
+    #chessIntendedMove { margin-top:10px; }
+    @media(max-width:660px) { .chess-board-wrap { border-width:5px; } .chess-square { font-size:clamp(22px,9vw,43px); } #chessInfo { display:block; } #chessInfo .speed-section { margin-top:18px;padding-top:18px;border-top:1px solid #293854; } #chessInfo .controls-section { margin-top:18px; } }
+
+    /* GAME 04: MULTIPLAYER Q DODGE */
+    .q-board-shell { position:relative; border:1px solid #365778; border-radius:15px; overflow:hidden; background:#071427; box-shadow:inset 0 0 35px #0bb9df0b, 0 15px 32px #0005; }
+    #qCanvas { display:block; width:100%; height:auto; aspect-ratio: 21/13; outline:none; }
+    .q-overlay { position:absolute; inset:0; background:#06101cba; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:10px; padding:23px; backdrop-filter:blur(5px); pointer-events:none; }
+    .q-overlay h3 { font-size:clamp(24px,3vw,34px); margin:0; letter-spacing:-.04em; color:#e9ffff; text-shadow:0 0 20px #27cce867; }
+    .q-overlay p { color:#c2d6e6; font-size:13px; line-height:1.65; margin:0; max-width:340px; }
+    .q-overlay .q-big { font-size:36px; }
+    .q-overlay .q-pill { border:1px solid #46cddd6b; border-radius:99px; color:#7ce5ee; font-size:11px; padding:5px 11px; font-weight:800; }
+    .q-hud { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:9px; margin:0 0 12px; }
+    .q-hud .omok-badge { font-weight:750; }
+    .q-actionrow { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; margin-top:14px; }
+    .q-actionrow .action { min-width:115px; }
+    .q-player-cards { display:grid; gap:10px; margin-top:12px; }
+    .q-player-card { border:1px solid #2d3e5a; border-left:4px solid var(--pc,#58e6ef); background:#0a172a; border-radius:11px; padding:11px; }
+    .q-player-card .q-head { display:flex; gap:9px; align-items:center; justify-content:space-between; font-size:12px; font-weight:850; }
+    .q-player-card .q-hearts { font-size:17px; letter-spacing:2px; color:#fe7d8d; }
+    .q-player-card.dead { opacity:.52; }
+    .q-player-card p { margin:5px 0 0; color:#a7bdd7; font-size:11px; }
+    .q-player-card .q-keys { color:#bdd7e8; font-size:11px; margin-top:7px; }
+    .q-player-card .q-key { display:inline-block; margin:2px 3px 0 0; min-width:20px; text-align:center; background:#1b2f4a; padding:3px 5px; border:1px solid #384f6d; border-radius:5px; font-weight:800; }
+    .q-touchpads { display:none; gap:9px; flex-wrap:wrap; margin-top:16px; }
+    .q-touchpad { flex:1; min-width:125px; border:1px solid #304663; background:#111f35; border-radius:13px; padding:10px 8px; text-align:center; }
+    .q-touchpad strong { display:block; color:var(--pc,#a6e2ef); font-size:12px; margin-bottom:8px; }
+    .q-padgrid { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,35px); gap:4px; }
+    .q-touchpad button { width:100%; height:100%; padding:0; border-radius:7px; color:#e7f9ff; background:#263d5c; border:1px solid #446483; font-size:17px; touch-action:none; user-select:none; }
+    .q-touchpad button:active { background:#4d80aa; }
+    .q-touchpad button[data-dir="up"] { grid-column:2;grid-row:1; }
+    .q-touchpad button[data-dir="left"] { grid-column:1;grid-row:2; }
+    .q-touchpad button[data-dir="down"] { grid-column:2;grid-row:2; }
+    .q-touchpad button[data-dir="right"] { grid-column:3;grid-row:2; }
+    .q-explain { font-size:12px; color:#a9c4df; line-height:1.7; }
+    .q-explain b { color:#c8edf7; }
+    @media (hover:none), (pointer:coarse) { .q-touchpads { display:flex; } }
+    @media (max-width:660px) { .q-touchpads { display:flex; } #qDodgeInfo { display:block; } .q-board-shell { border-radius:10px; } .q-overlay { padding:12px; } .q-overlay h3 { font-size:22px; } }
+
+
+    /* GAME 05: MINESWEEPER */
+    .mine-topline {display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+    .mine-display {display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#0a172a;border:1px solid #344666;font-weight:850;font-variant-numeric:tabular-nums;font-size:17px;color:#f5d78a;}
+    .mine-display small {font-size:11px;font-weight:800;color:#a5bad5;}
+    .mine-field-scroll {overflow:auto;max-width:100%;padding:9px;border:1px solid #3d5073;border-radius:14px;background:#0c1525;box-shadow:0 10px 30px #02071160;scrollbar-color:#627b9b #12213a;overscroll-behavior:contain;}
+    .mine-field {width:max-content;margin:0 auto;position:relative;}
+    .mine-board {--ms-cell:29px;display:grid;grid-template-columns:repeat(var(--ms-cols),var(--ms-cell));gap:2px;width:max-content;background:#17243c;padding:3px;border-radius:6px;user-select:none;-webkit-user-select:none;}
+    .mine-cell {display:grid;place-items:center;width:var(--ms-cell);height:var(--ms-cell);border:1px solid #5a7695;border-bottom:3px solid #334c6d;border-right:3px solid #334c6d;background:linear-gradient(145deg,#34516d,#233954);border-radius:4px;color:#f6faff;font-family:system-ui,sans-serif;font-weight:950;font-size:17px;padding:0;line-height:1;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+    .mine-cell:hover:not(.open):not(:disabled) {background:#466786;}
+    .mine-cell.open {border:1px solid #34445d;background:#152339;cursor:default;}
+    .mine-cell.flagged {color:#ffe090;}
+    .mine-cell.mine-explode {background:#dd5665;border-color:#dd5665;}
+    .mine-cell.mine-show {color:#f1f6ff;background:#433542;}
+    .mine-cell.mine-wrong {color:#ff7587;background:#423342;}
+    .mine-cell.n1 {color:#6badff;} .mine-cell.n2 {color:#6de4a4;} .mine-cell.n3 {color:#ff8181;}
+    .mine-cell.n4 {color:#b49aff;} .mine-cell.n5 {color:#f9a46f;} .mine-cell.n6 {color:#77dde6;}
+    .mine-cell.n7 {color:#f7e394;} .mine-cell.n8 {color:#d7e3f1;}
+    .mine-cell:focus-visible {outline:2px solid #f8e88c;outline-offset:-2px;z-index:1;}
+    .mine-mask {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;background:#071326e8;backdrop-filter:blur(4px);border-radius:6px;z-index:2;}
+    .mine-mask strong {font-size:23px;} .mine-mask span {font-size:12px;color:#b9cee7;}
+    .mine-message {min-height:56px;display:flex;align-items:center;justify-content:center;padding:10px 14px;border:1px solid #2f4464;background:#0d1b30;border-radius:11px;color:#c6d9f1;font-size:12px;line-height:1.55;text-align:center;margin-top:13px;}
+    .mine-message.win {border-color:#2c8a79;background:#12312f;color:#a2ffe0;}
+    .mine-message.lost {border-color:#935362;background:#30202b;color:#ffb9c6;}
+    .mine-actionbar {display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:13px;}
+    .mine-actionbar .action {min-width:98px;}
+    .mine-actionbar .action[aria-pressed="true"] {border-color:#f3c85f;background:#564624;color:#ffeaac;}
+    .mine-hint {font-size:11px;line-height:1.7;color:#9eb1ce;margin-top:10px;text-align:center;}
+    .mine-stat-grid {margin-top:16px;}
+    @media(max-width:660px){
+      #minesInfo {display:block;}
+      .mine-board {--ms-cell:clamp(26px,8vw,33px);gap:2px;}
+      .mine-cell {font-size:16px;}
+      .mine-field-scroll {padding:5px;}
+      .mine-actionbar .action {min-width:90px;}
+      #minesInfo .controls-section {margin-top:20px;padding-top:16px;border-top:1px solid #293854;}
+    }
+
+    /* GAME 06: SPOT THE DIFFERENCE */
+    .layout.spot-layout #spotPanel {grid-column:2 / 4;}
+    .spot-subtitle {font-size:12px;color:#b6c9e4;margin:0 0 13px;line-height:1.65;}
+    .spot-toolbar {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 13px;}
+    .spot-toolbar label {font-size:12px;font-weight:800;color:#bccdea;display:flex;align-items:center;gap:9px;white-space:nowrap;flex:none;}
+    .spot-toolbar select {max-width:240px;min-width:160px;}
+    .spot-stage-title {font-weight:850;color:#fff3c2;letter-spacing:-.01em;font-size:14px;}
+    .spot-scoreboard {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:16px;}
+    .spot-scorecell {padding:10px 7px;border:1px solid #314868;background:#0c1a2e;border-radius:11px;text-align:center;min-width:0;}
+    .spot-scorecell small {display:block;color:#a7bdd7;font-size:10px;font-weight:750;white-space:nowrap;}
+    .spot-scorecell strong {display:block;font-size:clamp(15px,2vw,22px);margin-top:3px;font-variant-numeric:tabular-nums;}
+    #spotTime.danger {color:#ff7587;animation:spot-flash .75s ease-in-out infinite alternate;}
+    @keyframes spot-flash {to {opacity:.48;}}
+    .spot-pictures {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;}
+    .spot-picture-card {background:#12253c;border:1px solid #345474;padding:7px;border-radius:15px;min-width:0;box-shadow:0 10px 22px #0005;}
+    .spot-picture-label {display:flex;align-items:center;gap:8px;font-size:12px;font-weight:900;color:#b9dcf0;padding:5px 5px 9px;}
+    .spot-picture-label span {display:inline-grid;place-items:center;border-radius:7px;background:#284b6a;color:#e4faff;width:24px;height:24px;}
+    .spot-picture {position:relative;overflow:hidden;aspect-ratio:3/2;background:#173c55;border-radius:9px;cursor:crosshair;touch-action:manipulation;outline:none;}
+    .spot-picture:focus-visible {outline:3px solid var(--cyan);outline-offset:3px;}
+    .spot-picture svg {display:block;width:100%;height:100%;pointer-events:none;user-select:none;}
+    .spot-picture.spot-locked {cursor:default;}
+    .spot-picture.spot-locked::after {content:'⏸ 일시정지';position:absolute;inset:0;display:grid;place-items:center;background:#071329ca;color:white;font-size:18px;font-weight:900;backdrop-filter:blur(5px);}
+    .spot-found-ring {fill:#23e6bc22;stroke:#15f4bb;stroke-width:5;paint-order:stroke;filter:drop-shadow(0 2px 5px #003d4d);}
+    .spot-found-tick {font-family:system-ui,sans-serif;font-size:24px;font-weight:900;fill:#fff;stroke:#167e71;stroke-width:3;paint-order:stroke;}
+    .spot-hint-ring {fill:#ffe88830;stroke:#fff27c;stroke-width:6;stroke-dasharray:8 5;filter:drop-shadow(0 0 6px #ffd447);animation:spot-hint 1.2s infinite alternate;transform-box:fill-box;transform-origin:center;}
+    @keyframes spot-hint {to {opacity:.35;transform:scale(1.18);}}
+    .spot-message {text-align:center;padding:13px;margin-top:14px;min-height:49px;border:1px solid #345475;border-radius:12px;background:#102139;color:#d4e5f8;font-size:13px;line-height:1.65;}
+    .spot-message.won {border-color:#45ae94;background:#143931;color:#b3ffe6;}
+    .spot-message.lost {border-color:#ad647b;background:#392033;color:#ffccd5;}
+    .spot-actions {display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:14px 0;}
+    .spot-actions .action {flex:1 1 135px;max-width:205px;}
+    .spot-actions button:disabled {opacity:.5;cursor:not-allowed;transform:none;}
+    .spot-instructions {font-size:12px;line-height:1.8;color:#aebfdb;background:#0a1629;border:1px solid #2a405f;border-radius:12px;padding:12px 15px;margin:13px 0 0;}
+    .spot-instructions strong {color:#e9f5ff;}
+    @media (max-width:1050px) {.layout.spot-layout #spotPanel {grid-column:1/-1;}}
+    @media (max-width:700px) {.spot-pictures {grid-template-columns:1fr;} .spot-picture-card {max-width:650px;width:100%;margin:0 auto;} .spot-scoreboard {gap:5px;} .spot-scorecell {padding:9px 3px;} .spot-scorecell small {font-size:9px;} .spot-scorecell strong {font-size:15px;} .spot-stage-title {font-size:13px;} .spot-toolbar select {min-width:140px;}}
+    @media (prefers-reduced-motion:reduce) {.spot-hint-ring,#spotTime.danger {animation:none;}}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand"><div class="brand-mark" aria-hidden="true">▦</div><div>PIXEL PLAY<small>MINI GAME ARCADE</small></div></div>
+      <div class="header-badge">● 6 GAMES AVAILABLE</div>
+    </header>
+
+    <section class="intro" aria-label="게임 소개">
+      <p class="eyebrow">WELCOME TO THE ARCADE</p>
+      <h1>한 페이지에서 즐기는 미니게임</h1>
+      <p>게임을 골라 플레이하세요. 테트리스, 오목, 체스, 이즈리얼 Q 피하기, 지뢰찾기, 틀린그림찾기를 한 페이지에서 즐길 수 있어요.</p>
+    </section>
+
+    <main class="layout">
+      <aside class="panel sidebar" aria-label="게임 목록">
+        <h2 class="section-label">게임 라이브러리</h2>
+        <button id="selectTetris" class="game-choice" type="button" aria-current="page" title="테트리스 선택">
+          <span class="icon" aria-hidden="true">🧩</span><span><strong>테트리스</strong><small>GAME 01 · CLASSIC</small></span>
+        </button>
+        <button id="selectOmok" class="game-choice" type="button" title="오목 선택">
+          <span class="icon" aria-hidden="true">⚫</span><span><strong>오목</strong><small>GAME 02 · GOMOKU / RENJU</small></span>
+        </button>
+        <button id="selectChess" class="game-choice" type="button" title="체스 선택">
+          <span class="icon" aria-hidden="true">♞</span><span><strong>체스</strong><small>GAME 03 · FIDE CHESS</small></span>
+        </button>
+        <button id="selectQDodge" class="game-choice" type="button" title="이즈리얼 Q 피하기 선택">
+          <span class="icon" aria-hidden="true">⚡</span><span><strong>Q 피하기</strong><small>GAME 04 · 2–3 PLAYERS</small></span>
+        </button>
+        <button id="selectMines" class="game-choice" type="button" title="지뢰찾기 선택">
+          <span class="icon" aria-hidden="true">💣</span><span><strong>지뢰찾기</strong><small>GAME 05 · MINESWEEPER</small></span>
+        </button>
+        <button id="selectSpot" class="game-choice" type="button" title="틀린그림찾기 선택">
+          <span class="icon" aria-hidden="true">🔎</span><span><strong>틀린그림찾기</strong><small>GAME 06 · SPOT DIFFERENCE</small></span>
+        </button>
+        <div class="future-slot" aria-label="추가 예정 게임"><span aria-hidden="true">＋</span><span>새로운 게임 추가 예정</span></div>
+        <p class="sidebar-hint">이 공간은 앞으로 게임을 하나씩 추가할 수 있도록 마련되어 있습니다.</p>
+      </aside>
+
+      <section id="tetrisPanel" class="panel game-panel" aria-label="테트리스 게임">
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 01 / CLASSIC</small>TETRIS</h2>
+          <div class="status" id="gameStatus" role="status" aria-live="polite">플레이 중</div>
+        </div>
+        <div class="game-board-wrap">
+          <canvas id="board" width="300" height="600" aria-label="테트리스 게임판, 10칸 너비 20칸 높이"></canvas>
+          <div id="overlay" class="overlay" hidden aria-live="assertive">
+            <div class="overlay-symbol" id="overlaySymbol" aria-hidden="true">⏸</div>
+            <h3 id="overlayTitle">일시정지</h3>
+            <p id="overlayDesc">계속하려면 일시정지 버튼 또는 P키를 누르세요.</p>
+          </div>
+        </div>
+        <div class="game-actions">
+          <button id="pauseBtn" type="button" class="action">⏸ 일시정지</button>
+          <button id="restartBtn" type="button" class="action primary">↻ 새 게임</button>
+        </div>
+        <div class="touch-controls" aria-label="모바일 게임 조작">
+          <button type="button" data-control="left" aria-label="왼쪽으로 이동">◀</button>
+          <button type="button" data-control="rotate" aria-label="블록 회전">⟳</button>
+          <button type="button" data-control="right" aria-label="오른쪽으로 이동">▶</button>
+          <button type="button" data-control="down" aria-label="아래로 이동">▼</button>
+          <button type="button" data-control="drop" aria-label="바닥으로 즉시 떨어뜨리기">⤓</button>
+        </div>
+        <div class="touch-caption">모바일: ◀ ▶ 이동 · ⟳ 회전 · ▼ 빠르게 · ⤓ 즉시 내리기</div>
+      </section>
+
+      <aside id="tetrisInfo" class="panel stats-panel" aria-label="테트리스 게임 정보와 설정">
+        <h2 class="section-label">플레이 기록</h2>
+        <div class="stat-grid">
+          <div class="stat-box"><span>현재 점수</span><strong id="score" class="accent">0</strong></div>
+          <div class="stat-box"><span>최고 점수</span><strong id="highScore">0</strong></div>
+          <div class="stat-box"><span>지운 줄</span><strong id="lines">0</strong></div>
+          <div class="stat-box"><span>레벨</span><strong id="level">1</strong></div>
+        </div>
+        <section class="next-section" aria-label="다음 블록 미리보기">
+          <h3 class="section-label">다음 블록</h3>
+          <div class="next-wrap"><canvas id="next" width="120" height="120" aria-label="다음에 나올 블록"></canvas></div>
+        </section>
+        <section class="speed-section" aria-label="게임 속도 설정">
+          <div class="speed-header"><h3 class="section-label">떨어지는 속도</h3><span class="speed-value" id="speedValue">5 · 보통</span></div>
+          <input id="speed" type="range" min="1" max="10" step="1" value="5" aria-label="블록 낙하 속도, 1 느림부터 10 빠름까지" />
+          <div class="speed-labels"><span>1 · 느림</span><span>10 · 빠름</span></div>
+        </section>
+        <section class="controls-section" aria-label="키보드 조작법">
+          <h3 class="section-label">키보드 조작법</h3>
+          <div class="keyboard-row"><span>좌우 이동</span><div class="keys"><kbd>←</kbd><kbd>→</kbd></div></div>
+          <div class="keyboard-row"><span>회전</span><div class="keys"><kbd>↑</kbd></div></div>
+          <div class="keyboard-row"><span>빠르게 내리기</span><div class="keys"><kbd>↓</kbd></div></div>
+          <div class="keyboard-row"><span>즉시 떨어뜨리기</span><div class="keys"><kbd>SPACE</kbd></div></div>
+          <div class="keyboard-row"><span>일시정지 / 재시작</span><div class="keys"><kbd>P</kbd><kbd>R</kbd></div></div>
+        </section>
+      </aside>
+      <section id="omokPanel" class="panel game-panel" aria-label="오목 게임" hidden>
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 02 / BOARD</small>OMOK <span class="omok-badge" id="omokRuleLabel">렌주 대국</span></h2>
+          <div class="status" id="omokStatus" role="status" aria-live="polite">흑 차례</div>
+        </div>
+        <div class="omok-board-wrap"><canvas id="omokBoard" width="640" height="640" aria-label="15줄 곱하기 15줄 오목판. 교차점을 클릭하거나 터치해 착수합니다."></canvas></div>
+        <div class="omok-legend"><span><span class="omok-dot" style="background:#172028"></span>흑</span><span><span class="omok-dot" style="background:#f3f4f7"></span>백</span><span>빨간 원: 마지막 수</span></div>
+        <div id="omokChoiceBox" class="choice-box" hidden>
+          <h3 id="omokChoiceTitle">Swap2: 돌 색 선택</h3>
+          <p id="omokChoiceDesc"></p>
+          <div class="choice-buttons">
+            <button id="omokChooseBlack" class="action primary" type="button">● 흑 선택</button>
+            <button id="omokChooseWhite" class="action" type="button">○ 백 선택</button>
+            <button id="omokAddTwo" class="action" type="button">백·흑 2수 추가</button>
+          </div>
+        </div>
+        <div id="omokMessage" class="omok-message" aria-live="polite">흑이 먼저 둡니다. 교차점을 클릭하거나 터치하세요.</div>
+        <div class="omok-actions">
+          <button type="button" id="omokRestart" class="action primary">↻ 새 대국</button>
+          <button type="button" id="omokUndo" class="action">↶ 무르기</button>
+          <button type="button" id="omokResign" class="action">기권하기</button>
+        </div>
+      </section>
+
+      <aside id="omokInfo" class="panel stats-panel omok-info" aria-label="오목 대국 설정과 규칙" hidden>
+        <h2 class="section-label">대국 설정</h2>
+        <label class="config-label" for="omokRules">적용 규칙</label>
+        <select id="omokRules" class="config-select">
+          <option value="renju">렌주룰 · 금수 적용</option>
+          <option value="gomoku">국제 오목 · Swap2</option>
+          <option value="free">자유 오목 · 금수 없음</option>
+        </select>
+        <label class="config-label" for="omokOpponent">상대방</label>
+        <select id="omokOpponent" class="config-select">
+          <option value="local">같은 기기에서 2인 대국</option>
+          <option value="cpu">컴퓨터와 대국 (내가 흑)</option>
+        </select>
+        <p id="omokOpponentHint">대국 방식 또는 규칙을 변경하면 새 대국이 시작됩니다.</p>
+        <section class="speed-section">
+          <h3 class="section-label">대국 현황</h3>
+          <div class="stat-grid">
+            <div class="stat-box"><span>현재 수순</span><strong id="omokMoveNum" class="accent">0</strong></div>
+            <div class="stat-box"><span>현재 차례</span><strong id="omokTurn" style="font-size:17px">흑</strong></div>
+            <div class="stat-box"><span>흑 승리</span><strong id="omokBlackWins">0</strong></div>
+            <div class="stat-box"><span>백 승리</span><strong id="omokWhiteWins">0</strong></div>
+          </div>
+          <p>승리 횟수는 이 페이지를 열어 둔 동안 기록됩니다.</p>
+        </section>
+        <section class="controls-section">
+          <h3 class="section-label">최근 착수</h3>
+          <div id="omokMoves" class="omok-moves">아직 놓은 돌이 없습니다.</div>
+        </section>
+        <section class="controls-section">
+          <h3 class="section-label">적용 규칙 안내</h3>
+          <div id="omokRuleDescription"></div>
+          <p>공식 규정 원문: <a href="https://www.renju.net/rifrules/" target="_blank" rel="noopener noreferrer">국제 렌주 규칙</a> · <a href="https://www.renju.net/gomokurules/" target="_blank" rel="noopener noreferrer">국제 오목 규칙</a></p>
+          <p><strong>안내:</strong> 국제 오목의 판정과 Swap2 시작 절차, 렌주의 핵심 착수·금수 규칙을 구현했습니다. 대회용 시계·기보 서명·심판 절차는 포함하지 않습니다.</p>
+        </section>
+      </aside>
+      <section id="chessPanel" class="panel game-panel" aria-label="체스 게임" hidden>
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 03 / BOARD</small>CHESS <span class="omok-badge">FIDE 표준 체스</span></h2>
+          <div class="status" id="chessStatus" role="status" aria-live="polite">백 차례</div>
+        </div>
+        <div class="chess-board-wrap"><div id="chessBoard" class="chess-board" role="grid" aria-label="8×8 체스판. 백이 아래에 있습니다."></div></div>
+        <div class="omok-legend"><span>♔ 백</span><span>♚ 흑</span><span>노란색: 직전 착수</span><span>초록색: 이동 가능한 칸</span></div>
+        <div id="chessPromotion" class="choice-box" hidden>
+          <h3>폰 승격 · 기물 선택</h3>
+          <p>최종 줄에 도착한 폰을 퀸, 룩, 비숍, 나이트 중 하나로 승격하세요.</p>
+          <div class="choice-buttons">
+            <button type="button" class="action" data-chess-promotion="q">♛ 퀸</button>
+            <button type="button" class="action" data-chess-promotion="r">♜ 룩</button>
+            <button type="button" class="action" data-chess-promotion="b">♝ 비숍</button>
+            <button type="button" class="action" data-chess-promotion="n">♞ 나이트</button>
+            <button type="button" id="chessPromotionCancel" class="action">취소</button>
+          </div>
+        </div>
+        <div id="chessMessage" class="omok-message" aria-live="polite">백이 먼저 둡니다. 기물을 선택해 보세요.</div>
+        <div class="omok-actions">
+          <button type="button" id="chessRestart" class="action primary">↻ 새 대국</button>
+          <button type="button" id="chessUndo" class="action">↶ 무르기</button>
+          <button type="button" id="chessResign" class="action">기권하기</button>
+          <button type="button" id="chessOffer" class="action">½ 무승부 제안</button>
+        </div>
+        <div id="chessDrawResponse" class="choice-box" hidden>
+          <h3>무승부 제안</h3><p>상대 선수가 수락하면 합의 무승부로 종료됩니다.</p>
+          <div class="choice-buttons"><button type="button" id="chessAgree" class="action primary">수락</button><button type="button" id="chessDecline" class="action">거절</button></div>
+        </div>
+      </section>
+      <aside id="chessInfo" class="panel stats-panel omok-info" aria-label="체스 대국 설정과 규칙" hidden>
+        <h2 class="section-label">체스 대국 설정</h2>
+        <label class="config-label" for="chessOpponent">대전 방식</label>
+        <select id="chessOpponent" class="config-select">
+          <option value="local">같은 기기에서 2인 대국</option>
+          <option value="cpu">컴퓨터와 대국 (내가 백)</option>
+        </select>
+        <p>대전 방식을 바꾸면 새 대국이 시작됩니다. 컴퓨터는 입문 연습용입니다.</p>
+        <section class="speed-section">
+          <h3 class="section-label">대국 현황</h3>
+          <div class="stat-grid">
+            <div class="stat-box"><span>진행된 수</span><strong id="chessMoveNum" class="accent">0</strong></div>
+            <div class="stat-box"><span>현재 차례</span><strong id="chessTurn" style="font-size:19px">백</strong></div>
+            <div class="stat-box"><span>백 승리</span><strong id="chessWhiteWins">0</strong></div>
+            <div class="stat-box"><span>흑 승리</span><strong id="chessBlackWins">0</strong></div>
+            <div class="stat-box"><span>무승부</span><strong id="chessDrawCount">0</strong></div>
+          </div>
+        </section>
+        <section class="controls-section">
+          <h3 class="section-label">대국 기보</h3>
+          <div id="chessMoves" class="chess-moves">아직 둔 수가 없습니다.</div>
+        </section>
+        <section id="chessDrawClaims" class="controls-section" hidden>
+          <h3 class="section-label">공식 무승부 청구</h3>
+          <p>3회 반복·50수 규칙은 자동 종료가 아니라 선수의 청구로 성립합니다.</p>
+          <button type="button" id="chessClaimNow" class="action" hidden>현재 포지션으로 무승부 청구</button>
+          <select id="chessIntendedMove" class="config-select" aria-label="착수 전 무승부 청구할 다음 수" hidden></select>
+          <button type="button" id="chessClaimNext" class="action" hidden>지정한 다음 수로 무승부 청구</button>
+        </section>
+        <section class="controls-section">
+          <h3 class="section-label">FIDE 체스 규칙</h3>
+          <p>백 선공 · 8×8 체스판 · 합법적인 기물 이동과 왕 보호 · 체크 · 체크메이트 · 캐슬링 · 앙파상 · 4종류 폰 승격 · 스테일메이트 · 죽은 포지션 · 3회 반복·50수 청구 · 5회 반복·75수 자동 무승부를 적용합니다.</p>
+          <p>규정 원문: <a href="https://handbook.fide.com/chapter/E012023" target="_blank" rel="noopener noreferrer">FIDE Laws of Chess (2023)</a></p>
+          <p><strong>안내:</strong> 이 모드는 온라인/로컬 게임입니다. 대회 전용 시계·터치무브 의무·심판 판정·기보 서명 같은 오프라인 경기 운영 절차는 구현하지 않습니다. 무르기는 연습 편의 기능입니다.</p>
+        </section>
+      </aside>
+
+      <section id="qDodgePanel" class="panel game-panel" aria-label="이즈리얼 Q 피하기 멀티플레이어 게임" hidden>
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 04 / SURVIVAL ARENA</small>이즈리얼 Q 피하기</h2>
+          <div class="status" id="qStatus" role="status" aria-live="polite">시작 대기</div>
+        </div>
+        <div class="q-hud">
+          <span class="omok-badge" id="qMatchType">2인 대전</span>
+          <span class="omok-badge">⏱ <strong id="qElapsed">0.0</strong>초 생존</span>
+          <span class="omok-badge">⚡ <strong id="qShots">0</strong>발 발사</span>
+        </div>
+        <div class="q-board-shell">
+          <canvas id="qCanvas" width="840" height="520" aria-label="Q 피하기 게임 경기장. 모든 플레이어는 각자의 키로 움직입니다."></canvas>
+          <div class="q-overlay" id="qOverlay" aria-live="polite">
+            <div class="q-big" aria-hidden="true">⚡</div>
+            <span class="q-pill" id="qOverlayBadge">LOCAL MULTIPLAYER</span>
+            <h3 id="qOverlayTitle">Q를 피하고 살아남아라!</h3>
+            <p id="qOverlayText">2~3명이 각자의 이동키로 캐릭터를 움직여 날아오는 Q 투사체를 피하세요. 마지막 생존자가 승리!</p>
+          </div>
+        </div>
+        <div class="q-actionrow">
+          <button id="qStart" type="button" class="action primary">▶ 게임 시작</button>
+          <button id="qPause" type="button" class="action" disabled>⏸ 일시정지</button>
+          <button id="qRestart" type="button" class="action">↻ 새 경기</button>
+        </div>
+        <div class="q-touchpads" id="qTouchpads" aria-label="터치 이동 조작 (모바일용)"></div>
+        <p class="bottom-note">PC 키보드로 동시에 플레이하는 방식입니다. Q는 캐릭터의 현재 위치를 겨냥해 발사되며, 발사 직전 예고선이 나타납니다.</p>
+      </section>
+
+      <aside id="qDodgeInfo" class="panel stats-panel omok-info" aria-label="Q 피하기 게임 설정과 조작법" hidden>
+        <h2 class="section-label">멀티플레이어 설정</h2>
+        <label for="qPlayerCount" class="config-label">참가 인원</label>
+        <select id="qPlayerCount" class="config-select">
+          <option value="2">2명 대전</option>
+          <option value="3">3명 대전</option>
+        </select>
+        <label for="qDifficulty" class="config-label">Q 공격 난이도</label>
+        <select id="qDifficulty" class="config-select">
+          <option value="easy">쉬움 · 느린 탄속</option>
+          <option value="normal" selected>보통 · 기본 속도</option>
+          <option value="hard">어려움 · 빠른 연사</option>
+        </select>
+        <p>인원·난이도를 바꾸면 새 경기로 초기화됩니다.</p>
+        <section class="speed-section">
+          <h3 class="section-label">생존 현황 · 조작키</h3>
+          <div id="qPlayers" class="q-player-cards"></div>
+          <div class="stat-grid" style="margin-top:13px">
+            <div class="stat-box"><span>최장 경기 생존시간</span><strong class="accent" style="font-size:19px" id="qBestTime">0.0초</strong></div>
+            <div class="stat-box"><span>현재 생존 인원</span><strong id="qSurvivorCount">2명</strong></div>
+          </div>
+        </section>
+        <section class="controls-section">
+          <h3 class="section-label">추가 조작키</h3>
+          <div class="keyboard-row"><span>시작 / 새 경기</span><div class="keys"><kbd>ENTER</kbd><kbd>R</kbd></div></div>
+          <div class="keyboard-row"><span>일시정지 / 재개</span><div class="keys"><kbd>SPACE</kbd></div></div>
+          <p class="q-explain"><b>게임 규칙:</b> 각자 체력 3개로 시작합니다. Q에 맞으면 체력 1개를 잃고 잠시 무적 상태가 됩니다. 마지막까지 살아남은 사람이 승리하며, 생존 시간이 길수록 투사체가 빨라집니다.</p>
+          <p class="q-explain">같은 키보드에서 여러 키를 동시에 누르면 일부 키보드에서 입력 제한(고스팅)이 발생할 수 있습니다.</p>
+          <p class="q-explain">이 게임은 스킬샷 회피를 테마로 만든 비공식 팬 미니게임이며 리그 오브 레전드 공식 게임과 무관합니다.</p>
+        </section>
+      </aside>
+
+      <section id="minesPanel" class="panel game-panel" aria-label="지뢰찾기 게임" hidden>
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 05 / PUZZLE</small>MINESWEEPER</h2>
+          <div class="status" id="minesStatus" role="status" aria-live="polite">시작 대기</div>
+        </div>
+        <div class="mine-topline">
+          <div class="mine-display" aria-live="polite">🚩 <span id="minesRemaining">010</span> <small>남은 지뢰</small></div>
+          <div class="mine-display">⏱ <span id="minesTime">00:00</span> <small>경과 시간</small></div>
+        </div>
+        <div class="mine-field-scroll" role="region" aria-label="지뢰찾기 게임판, 넓은 난이도는 좌우로 스크롤하세요" tabindex="0">
+          <div class="mine-field">
+            <div id="minesBoard" class="mine-board" role="group" aria-label="지뢰찾기 게임 칸들"></div>
+            <div id="minesMask" class="mine-mask" hidden aria-live="polite"><strong>⏸ 일시정지</strong><span>재개 버튼을 눌러 계속하세요.</span></div>
+          </div>
+        </div>
+        <div id="minesMessage" class="mine-message" aria-live="polite">첫 칸을 클릭하세요. 첫 클릭에서는 지뢰가 나오지 않습니다!</div>
+        <div class="mine-actionbar">
+          <button type="button" id="minesRestart" class="action primary">↻ 새 게임</button>
+          <button type="button" id="minesFlagMode" class="action" aria-pressed="false">🚩 깃발 모드 OFF</button>
+          <button type="button" id="minesPause" class="action">⏸ 일시정지</button>
+        </div>
+        <p class="mine-hint">좌클릭 / 터치: 칸 열기 · 우클릭 / 길게 누르기: 깃발 · 숫자 칸 클릭: 주변 칸 한꺼번에 열기</p>
+      </section>
+
+      <aside id="minesInfo" class="panel stats-panel omok-info" aria-label="지뢰찾기 난이도 및 설명" hidden>
+        <h2 class="section-label">지뢰찾기 설정</h2>
+        <label for="minesDifficulty" class="config-label">난이도 선택</label>
+        <select id="minesDifficulty" class="config-select">
+          <option value="beginner">초급 · 9×9 · 지뢰 10개</option>
+          <option value="intermediate">중급 · 16×16 · 지뢰 40개</option>
+          <option value="expert">고급 · 30×16 · 지뢰 99개</option>
+        </select>
+        <p>난이도를 변경하면 새 게임이 시작됩니다. 고급 게임판은 작은 화면에서 좌우로 스크롤할 수 있어요.</p>
+        <div class="stat-grid mine-stat-grid">
+          <div class="stat-box"><span>열어야 할 칸</span><strong id="minesSafeRemaining" class="accent">71</strong></div>
+          <div class="stat-box"><span>최고 기록</span><strong id="minesBest" style="font-size:21px">—</strong></div>
+          <div class="stat-box"><span>승리 횟수</span><strong id="minesWins">0</strong></div>
+          <div class="stat-box"><span>이번 난이도</span><strong id="minesLevelName" style="font-size:16px">초급</strong></div>
+        </div>
+        <section class="controls-section">
+          <h3 class="section-label">게임 방법</h3>
+          <p><b>숫자</b>는 해당 칸 주변 8칸에 있는 지뢰 수입니다.</p>
+          <p><b>승리:</b> 지뢰가 없는 칸을 모두 열면 성공입니다. 깃발을 전부 꽂을 필요는 없어요.</p>
+          <p><b>패배:</b> 지뢰를 열면 게임이 종료됩니다. 깃발을 잘못 꽂은 칸도 표시됩니다.</p>
+          <p><b>빠른 열기:</b> 열린 숫자 칸 주변에 표시한 깃발 수가 숫자와 같으면, 숫자 칸을 다시 클릭해 나머지 주변 칸을 한 번에 열 수 있습니다. 잘못 꽂은 깃발이 있으면 위험합니다.</p>
+          <p><b>모바일:</b> 길게 누르면 깃발을 꽂거나 제거합니다. 또는 화면의 <b>깃발 모드</b>를 켜고 짧게 터치하세요.</p>
+          <div class="keyboard-row"><span>새 게임</span><div class="keys"><kbd>R</kbd></div></div>
+          <div class="keyboard-row"><span>깃발 모드</span><div class="keys"><kbd>F</kbd></div></div>
+          <div class="keyboard-row"><span>일시정지</span><div class="keys"><kbd>ESC</kbd></div></div>
+        </section>
+      </aside>
+      <section id="spotPanel" class="panel game-panel" aria-label="틀린그림찾기 게임" hidden>
+        <div class="game-top">
+          <h2 class="game-title"><small>GAME 06 / PICTURE PUZZLE</small>틀린그림찾기</h2>
+          <div class="status" id="spotStatus" role="status" aria-live="polite">시작 대기</div>
+        </div>
+        <p class="spot-subtitle">두 그림을 비교해 서로 다른 부분을 찾아보세요. 어느 쪽 그림을 눌러도 정답으로 인정돼요!</p>
+        <div class="spot-toolbar">
+          <label for="spotDifficulty">난이도 <select id="spotDifficulty" class="config-select">
+            <option value="easy">쉬움 · 3곳 / 150초</option>
+            <option value="normal" selected>보통 · 5곳 / 120초</option>
+            <option value="hard">어려움 · 7곳 / 90초</option>
+          </select></label>
+          <span id="spotStageTitle" class="spot-stage-title">STAGE 1 · 바닷가 오후</span>
+        </div>
+        <div class="spot-scoreboard" aria-label="게임 기록">
+          <div class="spot-scorecell"><small>찾은 차이</small><strong id="spotFound" style="color:#70edd7">0 / 5</strong></div>
+          <div class="spot-scorecell"><small>남은 시간</small><strong id="spotTime">02:00</strong></div>
+          <div class="spot-scorecell"><small>실수</small><strong id="spotMistakes">0 / 4</strong></div>
+          <div class="spot-scorecell"><small>총 점수</small><strong id="spotScore">0</strong></div>
+          <div class="spot-scorecell"><small>최고 점수</small><strong id="spotBest">0</strong></div>
+        </div>
+        <div class="spot-pictures">
+          <div class="spot-picture-card">
+            <div class="spot-picture-label"><span>A</span> 원본 그림</div>
+            <div id="spotLeft" class="spot-picture" tabindex="0" role="img" aria-label="원본 그림. 마우스 또는 터치로 차이를 찾으세요."></div>
+          </div>
+          <div class="spot-picture-card">
+            <div class="spot-picture-label"><span>B</span> 바뀐 그림</div>
+            <div id="spotRight" class="spot-picture" tabindex="0" role="img" aria-label="바뀐 그림. 마우스 또는 터치로 차이를 찾으세요."></div>
+          </div>
+        </div>
+        <div id="spotMessage" class="spot-message" role="status" aria-live="polite">▶ 게임 시작을 눌러 차이점 찾기를 시작하세요.</div>
+        <div class="spot-actions">
+          <button id="spotStart" class="action primary" type="button">▶ 게임 시작</button>
+          <button id="spotHint" class="action" type="button" disabled>💡 힌트 (2)</button>
+          <button id="spotPause" class="action" type="button" disabled>⏸ 일시정지</button>
+          <button id="spotRestart" class="action" type="button">↻ 처음부터</button>
+        </div>
+        <p class="spot-instructions"><strong>게임 방법</strong> · 좌우 그림의 차이점을 클릭하거나 터치하세요. 틀린 곳을 누르면 표시가 양쪽에 남아요. 제한시간 안에 모두 찾으면 다음 스테이지로 진행할 수 있어요. 엉뚱한 곳을 너무 많이 누르면 실패합니다. <strong>단축키</strong> R: 처음부터 · H: 힌트 · Space: 일시정지</p>
+      </section>
+    </main>
+    <p class="bottom-note">테트리스는 게임 오버 2초 후 자동 재시작합니다. 나머지 게임은 새 게임·새 경기 버튼으로 다시 시작하세요.</p>
+  </div>
+
+  <script>
+    "use strict";
+
+    // ── GAME 01: TETRIS ──
+    // 나중에 다른 게임을 추가할 때 이 섹션을 별도 함수/모듈로 분리하고
+    // 위쪽 게임 라이브러리에 새 메뉴와 새 게임 화면을 추가하면 됩니다.
+
+    const COLS = 10;
+    const ROWS = 20;
+    const CELL = 30;
+    const SHAPES = {
+      I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+      O: [[1,1],[1,1]],
+      T: [[0,1,0],[1,1,1],[0,0,0]],
+      S: [[0,1,1],[1,1,0],[0,0,0]],
+      Z: [[1,1,0],[0,1,1],[0,0,0]],
+      J: [[1,0,0],[1,1,1],[0,0,0]],
+      L: [[0,0,1],[1,1,1],[0,0,0]]
+    };
+    const COLORS = {
+      I: "#48d8eb", O: "#f4d35e", T: "#ac8cff", S: "#69e6a7",
+      Z: "#ff6b89", J: "#729eff", L: "#ffaf69"
+    };
+
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const nextCanvas = document.getElementById("next");
+    const nextCtx = nextCanvas.getContext("2d");
+    const ui = {
+      score: document.getElementById("score"),
+      highScore: document.getElementById("highScore"),
+      lines: document.getElementById("lines"),
+      level: document.getElementById("level"),
+      speed: document.getElementById("speed"),
+      speedValue: document.getElementById("speedValue"),
+      status: document.getElementById("gameStatus"),
+      overlay: document.getElementById("overlay"),
+      overlaySymbol: document.getElementById("overlaySymbol"),
+      overlayTitle: document.getElementById("overlayTitle"),
+      overlayDesc: document.getElementById("overlayDesc"),
+      pauseBtn: document.getElementById("pauseBtn"),
+      restartBtn: document.getElementById("restartBtn")
+    };
+
+    let board, piece, nextType, bag = [];
+    let score = 0, lines = 0, level = 1, speed = 5;
+    let paused = false, gameOver = false;
+    let lastTime = 0, dropCounter = 0, restartTimer = null;
+    let highScore = 0;
+
+    try { highScore = Number(localStorage.getItem("pixelplay_tetris_best")) || 0; }
+    catch (_) { /* 파일 열기 제한 브라우저에서는 저장 없이 게임 실행 */ }
+
+    function randomPieceType() {
+      if (!bag.length) {
+        bag = Object.keys(SHAPES);
+        for (let i = bag.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [bag[i], bag[j]] = [bag[j], bag[i]];
+        }
+      }
+      return bag.pop();
+    }
+
+    function emptyBoard() { return Array.from({ length: ROWS }, () => Array(COLS).fill(null)); }
+    function copyShape(shape) { return shape.map(row => [...row]); }
+
+    function spawnPiece() {
+      const type = nextType;
+      nextType = randomPieceType();
+      piece = { type, shape: copyShape(SHAPES[type]), x: Math.floor((COLS - SHAPES[type][0].length) / 2), y: -1 };
+      drawNext();
+      if (collides(piece.x, piece.y, piece.shape)) endGame();
+    }
+
+    function collides(x, y, shape) {
+      for (let r = 0; r < shape.length; r++) {
+        for (let c = 0; c < shape[r].length; c++) {
+          if (!shape[r][c]) continue;
+          const nx = x + c, ny = y + r;
+          if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+          if (ny >= 0 && board[ny][nx]) return true;
+        }
+      }
+      return false;
+    }
+
+    function updateStats() {
+      ui.score.textContent = score.toLocaleString("ko-KR");
+      ui.highScore.textContent = highScore.toLocaleString("ko-KR");
+      ui.lines.textContent = lines;
+      ui.level.textContent = level;
+    }
+
+    function addPoints(points) {
+      score += points;
+      if (score > highScore) {
+        highScore = score;
+        try { localStorage.setItem("pixelplay_tetris_best", String(highScore)); }
+        catch (_) { /* 저장이 허용되지 않아도 플레이는 계속 */ }
+      }
+      updateStats();
+    }
+
+    function clearFullRows() {
+      let removed = 0;
+      for (let y = ROWS - 1; y >= 0; y--) {
+        if (board[y].every(Boolean)) {
+          board.splice(y, 1);
+          board.unshift(Array(COLS).fill(null));
+          removed++;
+          y++;
+        }
+      }
+      if (removed) {
+        addPoints([0, 100, 300, 500, 800][removed] * level);
+        lines += removed;
+        level = Math.floor(lines / 10) + 1;
+        updateStats();
+      }
+    }
+
+    function lockPiece() {
+      let aboveTop = false;
+      piece.shape.forEach((row, r) => row.forEach((value, c) => {
+        if (!value) return;
+        const y = piece.y + r;
+        if (y < 0) aboveTop = true;
+        else board[y][piece.x + c] = piece.type;
+      }));
+      if (aboveTop) { endGame(); return; }
+      clearFullRows();
+      spawnPiece();
+    }
+
+    function move(dx, dy) {
+      if (paused || gameOver) return false;
+      if (!collides(piece.x + dx, piece.y + dy, piece.shape)) {
+        piece.x += dx;
+        piece.y += dy;
+        return true;
+      }
+      if (dy > 0) lockPiece();
+      return false;
+    }
+
+    function softDrop() {
+      if (paused || gameOver) return;
+      if (move(0, 1)) addPoints(1);
+      dropCounter = 0;
+    }
+
+    function hardDrop() {
+      if (paused || gameOver) return;
+      let distance = 0;
+      while (!collides(piece.x, piece.y + 1, piece.shape)) {
+        piece.y++;
+        distance++;
+      }
+      if (distance) addPoints(distance * 2);
+      lockPiece();
+      dropCounter = 0;
+    }
+
+    function rotatePiece() {
+      if (paused || gameOver || piece.type === "O") return;
+      const old = piece.shape;
+      const size = old.length;
+      const rotated = Array.from({ length: size }, (_, r) =>
+        Array.from({ length: size }, (_, c) => old[size - 1 - c][r])
+      );
+      // 벽에 닿은 블록도 회전할 수 있도록 간단한 벽 밀기(wall kick) 적용
+      for (const [dx, dy] of [[0,0],[-1,0],[1,0],[-2,0],[2,0],[0,-1],[-1,-1],[1,-1]]) {
+        if (!collides(piece.x + dx, piece.y + dy, rotated)) {
+          piece.x += dx;
+          piece.y += dy;
+          piece.shape = rotated;
+          return;
+        }
+      }
+    }
+
+    function fallingInterval() {
+      // 슬라이더 1=느림, 10=빠름. 10줄마다 레벨도 올라 조금씩 빨라짐.
+      const base = 1200 - speed * 100;
+      return Math.max(75, base * Math.pow(0.87, level - 1));
+    }
+
+    function showOverlay(symbol, title, description) {
+      ui.overlaySymbol.textContent = symbol;
+      ui.overlayTitle.textContent = title;
+      ui.overlayDesc.textContent = description;
+      ui.overlay.hidden = false;
+    }
+
+    function togglePause(force) {
+      if (gameOver) return;
+      paused = typeof force === "boolean" ? force : !paused;
+      if (paused) {
+        ui.status.textContent = "일시정지";
+        ui.status.style.color = "#f4d35e";
+        ui.pauseBtn.textContent = "▶ 계속하기";
+        showOverlay("⏸", "일시정지", "P키 또는 계속하기 버튼을 누르면 게임이 이어집니다.");
+      } else {
+        ui.status.textContent = "플레이 중";
+        ui.status.style.color = "#6de6c5";
+        ui.pauseBtn.textContent = "⏸ 일시정지";
+        ui.overlay.hidden = true;
+        dropCounter = 0;
+      }
+    }
+
+    function endGame() {
+      if (gameOver) return;
+      gameOver = true;
+      ui.status.textContent = "게임 오버";
+      ui.status.style.color = "#ff8097";
+      showOverlay("💥", "게임 오버!", `최종 점수 ${score.toLocaleString("ko-KR")}점 · 2초 후 자동으로 다시 시작합니다.`);
+      clearTimeout(restartTimer);
+      restartTimer = setTimeout(resetGame, 2000);
+    }
+
+    function resetGame() {
+      clearTimeout(restartTimer);
+      board = emptyBoard();
+      bag = [];
+      nextType = randomPieceType();
+      score = 0;
+      lines = 0;
+      level = 1;
+      paused = false;
+      gameOver = false;
+      dropCounter = 0;
+      lastTime = 0;
+      ui.status.textContent = "플레이 중";
+      ui.status.style.color = "#6de6c5";
+      ui.pauseBtn.textContent = "⏸ 일시정지";
+      ui.overlay.hidden = true;
+      spawnPiece();
+      updateStats();
+      render();
+    }
+
+    function drawBlock(context, x, y, size, color, ghost = false) {
+      const px = x * size, py = y * size;
+      if (ghost) {
+        context.strokeStyle = color;
+        context.globalAlpha = 0.48;
+        context.lineWidth = 2;
+        context.strokeRect(px + 4, py + 4, size - 8, size - 8);
+        context.globalAlpha = 1;
+        return;
+      }
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      context.fillStyle = "#ffffff45";
+      context.fillRect(px + 3, py + 3, size - 6, 4);
+      context.fillStyle = "#00000028";
+      context.fillRect(px + 3, py + size - 7, size - 6, 4);
+    }
+
+    function drawShape(context, shape, type, x, y, size, ghost = false) {
+      shape.forEach((row, r) => row.forEach((value, c) => {
+        if (value && y + r >= 0) drawBlock(context, x + c, y + r, size, COLORS[type], ghost);
+      }));
+    }
+
+    function drawNext() {
+      nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+      const shape = SHAPES[nextType];
+      const filled = [];
+      shape.forEach((row, r) => row.forEach((v, c) => { if (v) filled.push([c, r]); }));
+      if (!filled.length) return;
+      const minX = Math.min(...filled.map(p => p[0]));
+      const maxX = Math.max(...filled.map(p => p[0]));
+      const minY = Math.min(...filled.map(p => p[1]));
+      const maxY = Math.max(...filled.map(p => p[1]));
+      const size = 24;
+      const xOffset = (120 - (maxX - minX + 1) * size) / 2;
+      const yOffset = (120 - (maxY - minY + 1) * size) / 2;
+      filled.forEach(([x, y]) => drawBlock(nextCtx, (xOffset / size) + x - minX, (yOffset / size) + y - minY, size, COLORS[nextType]));
+    }
+
+    function render() {
+      ctx.fillStyle = "#080f1d";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#1b29403b";
+      ctx.lineWidth = 1;
+      for (let c = 0; c <= COLS; c++) {
+        ctx.beginPath(); ctx.moveTo(c * CELL + 0.5, 0); ctx.lineTo(c * CELL + 0.5, ROWS * CELL); ctx.stroke();
+      }
+      for (let r = 0; r <= ROWS; r++) {
+        ctx.beginPath(); ctx.moveTo(0, r * CELL + 0.5); ctx.lineTo(COLS * CELL, r * CELL + 0.5); ctx.stroke();
+      }
+      board.forEach((row, r) => row.forEach((type, c) => { if (type) drawBlock(ctx, c, r, CELL, COLORS[type]); }));
+      if (!piece) return;
+      if (!gameOver) {
+        let ghostY = piece.y;
+        while (!collides(piece.x, ghostY + 1, piece.shape)) ghostY++;
+        if (ghostY !== piece.y) drawShape(ctx, piece.shape, piece.type, piece.x, ghostY, CELL, true);
+      }
+      drawShape(ctx, piece.shape, piece.type, piece.x, piece.y, CELL);
+    }
+
+    function frame(now) {
+      if (!lastTime) lastTime = now;
+      const elapsed = Math.min(now - lastTime, 100);
+      lastTime = now;
+      if (activeGame === "tetris" && !paused && !gameOver && piece) {
+        dropCounter += elapsed;
+        if (dropCounter >= fallingInterval()) {
+          move(0, 1);
+          dropCounter = 0;
+        }
+      }
+      render();
+      requestAnimationFrame(frame);
+    }
+
+    document.addEventListener("keydown", event => {
+      if (activeGame !== "tetris") return;
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) return;
+      const keys = ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Space", " ", "p", "P", "r", "R"];
+      if (keys.includes(event.key)) event.preventDefault();
+      if (event.key === "p" || event.key === "P") { if (!event.repeat) togglePause(); return; }
+      if (event.key === "r" || event.key === "R") { if (!event.repeat) resetGame(); return; }
+      if (paused || gameOver) return;
+      switch (event.key) {
+        case "ArrowLeft": move(-1, 0); break;
+        case "ArrowRight": move(1, 0); break;
+        case "ArrowDown": softDrop(); break;
+        case "ArrowUp": if (!event.repeat) rotatePiece(); break;
+        case " ": case "Space": if (!event.repeat) hardDrop(); break;
+      }
+    });
+
+    ui.pauseBtn.addEventListener("click", () => togglePause());
+    ui.restartBtn.addEventListener("click", resetGame);
+    ui.speed.addEventListener("input", () => {
+      speed = Number(ui.speed.value);
+      ui.speedValue.textContent = `${speed} · ${speed <= 3 ? "느림" : speed <= 6 ? "보통" : "빠름"}`;
+      ui.speed.style.setProperty("--range-progress", `${((speed - 1) / 9) * 100}%`);
+      dropCounter = 0;
+    });
+
+    // 터치 조작: 누르고 있으면 좌우 이동 및 아래 이동 반복
+    for (const btn of document.querySelectorAll("[data-control]")) {
+      let repeatTimer = null;
+      const act = () => {
+        switch (btn.dataset.control) {
+          case "left": move(-1, 0); break;
+          case "right": move(1, 0); break;
+          case "down": softDrop(); break;
+          case "rotate": rotatePiece(); break;
+          case "drop": hardDrop(); break;
+        }
+      };
+      btn.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        btn.setPointerCapture(event.pointerId);
+        act();
+        if (["left", "right", "down"].includes(btn.dataset.control)) {
+          let started = false;
+          repeatTimer = setInterval(() => {
+            if (!started) { started = true; return; }
+            act();
+          }, 85);
+        }
+      });
+      const stop = () => { if (repeatTimer !== null) { clearInterval(repeatTimer); repeatTimer = null; } };
+      btn.addEventListener("pointerup", stop);
+      btn.addEventListener("pointercancel", stop);
+      btn.addEventListener("lostpointercapture", stop);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && activeGame === "tetris" && !paused && !gameOver) togglePause(true);
+    });
+
+    resetGame();
+    ui.speed.dispatchEvent(new Event("input"));
+    requestAnimationFrame(frame);
+
+    // ── GAME 02: OMOK / GOMOKU / RENJU ──
+    // 참고: https://www.renju.net/rifrules/ 및 https://www.renju.net/gomokurules/
+    // 국제 오목은 Swap2 교환 개시, 정확히 5개 승리. 렌주는 흑 금수, 백 장목 승리.
+    let activeGame = "tetris";
+    const OMOK_SIZE = 15;
+    const O_DIRS = [[1,0], [0,1], [1,1], [1,-1]];
+    const O_PAD = 40;
+    const O_STEP = 40;
+    const oCanvas = document.getElementById("omokBoard");
+    const oCtx = oCanvas.getContext("2d");
+    const oUI = {
+      panel: document.getElementById("omokPanel"),
+      info: document.getElementById("omokInfo"),
+      rules: document.getElementById("omokRules"),
+      opponent: document.getElementById("omokOpponent"),
+      opponentHint: document.getElementById("omokOpponentHint"),
+      message: document.getElementById("omokMessage"),
+      status: document.getElementById("omokStatus"),
+      ruleLabel: document.getElementById("omokRuleLabel"),
+      turn: document.getElementById("omokTurn"),
+      moveNum: document.getElementById("omokMoveNum"),
+      moves: document.getElementById("omokMoves"),
+      blackWins: document.getElementById("omokBlackWins"),
+      whiteWins: document.getElementById("omokWhiteWins"),
+      ruleDescription: document.getElementById("omokRuleDescription"),
+      choice: document.getElementById("omokChoiceBox"),
+      choiceTitle: document.getElementById("omokChoiceTitle"),
+      choiceDesc: document.getElementById("omokChoiceDesc"),
+      chooseBlack: document.getElementById("omokChooseBlack"),
+      chooseWhite: document.getElementById("omokChooseWhite"),
+      addTwo: document.getElementById("omokAddTwo"),
+      restart: document.getElementById("omokRestart"),
+      undo: document.getElementById("omokUndo"),
+      resign: document.getElementById("omokResign")
+    };
+
+    let oBoard, oMoves, oColor, oMode, oOpponent, oPhase, oOpeningStage;
+    let oPlayers = { 1: "A", [-1]: "B" };
+    let oFinished = false, oWinner = 0, oHover = null, oComputerTimer = null;
+    let oMessage = "", oMessageTone = "";
+    const oWins = { 1: 0, [-1]: 0 };
+    const oLetters = "ABCDEFGHJKLMNOP"; // 보드 좌표에서 I는 사용하지 않음
+
+    function omokInBounds(x, y) {
+      return x >= 0 && x < OMOK_SIZE && y >= 0 && y < OMOK_SIZE;
+    }
+    function omokConsecutive(b, x, y, dx, dy, color) {
+      let n = 1;
+      for (const sign of [-1, 1]) {
+        let cx = x + dx * sign, cy = y + dy * sign;
+        while (omokInBounds(cx, cy) && b[cy][cx] === color) {
+          n++;
+          cx += dx * sign;
+          cy += dy * sign;
+        }
+      }
+      return n;
+    }
+    function omokLineLengths(b, x, y, color) {
+      return O_DIRS.map(([dx,dy]) => omokConsecutive(b, x, y, dx, dy, color));
+    }
+
+    // 한 줄의 '사'는 오목을 완성할 수 있는 같은 네 돌 집합 하나로 셉니다.
+    // 열린 사처럼 완성 지점이 두 개여도 하나의 사입니다.
+    function omokFoursInDirection(b, x, y, dx, dy) {
+      const found = new Map();
+      for (let start = -4; start <= 0; start++) {
+        const stones = [], empty = [];
+        let valid = true;
+        for (let k = 0; k < 5; k++) {
+          const px = x + dx * (start + k), py = y + dy * (start + k);
+          if (!omokInBounds(px, py) || b[py][px] === -1) { valid = false; break; }
+          if (b[py][px] === 1) stones.push([px, py]);
+          else empty.push([px, py]);
+        }
+        if (!valid || stones.length !== 4 || empty.length !== 1) continue;
+        const [ex, ey] = empty[0];
+        b[ey][ex] = 1;
+        const isFive = omokConsecutive(b, ex, ey, dx, dy, 1) === 5;
+        b[ey][ex] = 0;
+        if (!isFive) continue;
+        // 같은 네 돌 집합에 대한 승리 가능 위치들을 합칩니다.
+        const key = stones.map(([sx,sy]) => `${sy * OMOK_SIZE + sx}`).sort((a,b)=>Number(a)-Number(b)).join(",");
+        if (!found.has(key)) found.set(key, { stones, ends: new Set() });
+        found.get(key).ends.add(`${ex},${ey}`);
+      }
+      return [...found.values()];
+    }
+
+    function omokFoursAt(b, x, y) {
+      const all = [];
+      for (const [dx,dy] of O_DIRS) {
+        all.push(...omokFoursInDirection(b, x, y, dx, dy));
+      }
+      return all;
+    }
+
+    // '삼'은 적법한 다음 흑 수로 열린 사(양끝에서 오목 완성 가능)를
+    // 만들 수 있어야 합니다. 단순한 모양만 보지 않고 다음 수의 33·44·장목도 검사합니다.
+    // RIF 9.3의 중첩된 가짜 33 판정을 위해 가상수를 재귀적으로 확인합니다.
+    function omokCountRealThrees(b, x, y, cache) {
+      const validGroups = new Set();
+      for (const [dx,dy] of O_DIRS) {
+        for (let t = -4; t <= 4; t++) {
+          if (t === 0) continue;
+          const ex = x + dx * t, ey = y + dy * t;
+          if (!omokInBounds(ex, ey) || b[ey][ex] !== 0) continue;
+          b[ey][ex] = 1;
+          const straightFours = omokFoursInDirection(b, ex, ey, dx, dy)
+            .filter(f => f.ends.size >= 2 &&
+              f.stones.some(([sx,sy]) => sx === x && sy === y));
+          if (!straightFours.length) { b[ey][ex] = 0; continue; }
+          // 놓은 돌을 제외하면 정확히 3개인 자유삼 모양만 취급합니다.
+          const candidates = straightFours.map(f => f.stones
+            .filter(([sx,sy]) => sx !== ex || sy !== ey));
+          const verdict = omokBlackPlacedVerdict(b, ex, ey, cache);
+          if (verdict === "ok") {
+            for (const three of candidates) {
+              if (three.length !== 3) continue;
+              const key = three.map(([sx,sy]) => sy * OMOK_SIZE + sx).sort((a,b)=>a-b).join(",");
+              validGroups.add(key);
+            }
+          }
+          b[ey][ex] = 0;
+          if (validGroups.size >= 2) return 2;
+        }
+      }
+      return validGroups.size;
+    }
+
+    // b[y][x]에는 이미 흑돌을 가정합니다. 5목이 다른 금수보다 우선합니다.
+    function omokBlackPlacedVerdict(b, x, y, cache = new Map()) {
+      const lengths = omokLineLengths(b, x, y, 1);
+      if (lengths.includes(5)) return "win";
+      if (lengths.some(n => n >= 6)) return "overline";
+      const fours = omokFoursAt(b, x, y);
+      if (fours.length >= 2) return "double-four";
+      const key = `${y * OMOK_SIZE + x}:${b.map(row => row.join("")) .join("/")}`;
+      if (cache.has(key)) return cache.get(key);
+      // 이 자리에 이미 흑이 있으므로 하위 가상수는 빈자리에만 생깁니다.
+      // 호출 깊이가 커져도 흑돌이 증가하므로 순환 호출은 없습니다.
+      const threes = omokCountRealThrees(b, x, y, cache);
+      const result = threes >= 2 ? "double-three" : "ok";
+      cache.set(key, result);
+      return result;
+    }
+
+    function omokCoordinate(x,y) { return `${oLetters[x]}${15 - y}`; }
+    function omokSetMessage(text, tone = "") {
+      oMessage = text;
+      oMessageTone = tone;
+      oUI.message.textContent = text;
+      oUI.message.className = `omok-message${tone ? ` ${tone}` : ""}`;
+    }
+    function omokModeName() {
+      return oMode === "renju" ? "렌주 대국" : oMode === "gomoku" ? "국제 오목 · Swap2" : "자유 오목";
+    }
+    function omokCurrentActor() {
+      if (oPhase === "setup3") return "A";
+      if (oPhase === "setup2") return "B";
+      if (oPhase === "chooseB") return "B";
+      if (oPhase === "chooseA") return "A";
+      if (oOpponent === "cpu" && oColor === -1) return "컴퓨터";
+      return oPlayers[oColor];
+    }
+    function omokUpdateUI() {
+      oUI.ruleLabel.textContent = omokModeName();
+      oUI.moveNum.textContent = oMoves.length;
+      oUI.blackWins.textContent = oWins[1];
+      oUI.whiteWins.textContent = oWins[-1];
+      oUI.turn.textContent = oFinished ? (oWinner ? `${oWinner === 1 ? "흑" : "백"} 승` : "무승부")
+        : oPhase === "chooseB" || oPhase === "chooseA" ? "색 선택"
+        : `${oColor === 1 ? "흑" : "백"} (${omokCurrentActor()})`;
+      const recent = oMoves.slice(-10).map((m, idx) => {
+        const prefix = oMoves.length - Math.min(10,oMoves.length) + idx + 1;
+        return `<span class="omok-key">${prefix}.</span> ${m.color === 1 ? "●" : "○"}${omokCoordinate(m.x,m.y)}`;
+      });
+      oUI.moves.innerHTML = recent.length ? recent.join(" · ") : "아직 놓은 돌이 없습니다.";
+      oUI.choice.hidden = !(oPhase === "chooseB" || oPhase === "chooseA") || oFinished;
+      if (oPhase === "chooseB") {
+        oUI.choiceTitle.textContent = "Swap2 · B 플레이어의 선택";
+        oUI.choiceDesc.textContent = "A가 흑·백·흑 3수를 두었습니다. B는 흑이나 백을 선택하거나, 백·흑 2수를 더 배치할 수 있습니다.";
+      } else if (oPhase === "chooseA") {
+        oUI.choiceTitle.textContent = "Swap2 · A 플레이어의 최종 선택";
+        oUI.choiceDesc.textContent = "B가 백·흑 2수를 추가했습니다. 이제 A가 사용할 색을 선택합니다.";
+      }
+      oUI.addTwo.hidden = oPhase !== "chooseB";
+      const label = oFinished ? "대국 종료" : oPhase.startsWith("choose") ? "색 선택 중" :
+        `${oColor === 1 ? "흑" : "백"} 차례`;
+      oUI.status.textContent = label;
+      oUI.status.style.color = oFinished ? "#f4d35e" : "#6de6c5";
+      oUI.undo.hidden = oMode === "gomoku"; // 공식 Swap2 진행 도중 임의 무르기 금지
+      oUI.resign.disabled = oFinished || oPhase !== "play";
+      oUI.opponent.disabled = oMode === "gomoku";
+      oUI.opponentHint.textContent = oMode === "gomoku"
+        ? "공식 Swap2는 교환·선택을 하는 두 사람이 필요하여 2인용으로 진행합니다."
+        : "설정을 변경하면 새 대국이 시작됩니다. 컴퓨터 대전에서는 흑을 조작합니다.";
+      const rulesText = oMode === "renju"
+        ? "15×15판 · 흑 중앙 첫 수 · 흑은 정확히 5목 승리 · 백은 5목 이상 승리 · 흑 33·44·장목 금수는 반칙패입니다. 복합 삼삼의 예외(가짜 33)를 판정합니다. 대회용 렌주 오프닝 교환 절차는 사용하지 않습니다."
+        : oMode === "gomoku"
+        ? "RIF 국제 오목: 15×15판 · 두 색 모두 정확히 5목만 승리 · 장목은 승리 아님 · 금수 없음 · A의 흑백흑 → B의 색 선택 또는 백흑 추가 → 필요 시 A의 색 선택(Swap2)."
+        : "자유 오목: 15×15판 · 흑 선공 · 흑과 백 모두 5목 이상 연결하면 승리 · 33·44·장목 금수가 없습니다.";
+      oUI.ruleDescription.textContent = rulesText;
+      drawOmok();
+    }
+
+    function omokReset() {
+      clearTimeout(oComputerTimer);
+      oMode = oUI.rules.value;
+      oOpponent = oMode === "gomoku" ? "local" : oUI.opponent.value;
+      oBoard = Array.from({length:OMOK_SIZE},()=>Array(OMOK_SIZE).fill(0));
+      oMoves = [];
+      oColor = 1;
+      oOpeningStage = 0;
+      oPhase = oMode === "gomoku" ? "setup3" : "play";
+      oPlayers = { 1:"A", [-1]:"B" };
+      oFinished = false;
+      oWinner = 0;
+      oHover = null;
+      omokSetMessage(oMode === "gomoku"
+        ? "Swap2 시작: A 플레이어가 흑·백·흑 순서대로 빈 교차점 세 곳에 놓습니다."
+        : oMode === "renju"
+        ? "렌주 대국: 흑의 첫 수는 중앙(H8)입니다. 금수를 두면 백이 승리합니다."
+        : "자유 오목: 흑이 먼저 둡니다. 5개 이상 이으면 승리합니다.");
+      omokUpdateUI();
+    }
+
+    function omokSwitchGame(name) {
+      if (name === activeGame) return;
+      activeGame = name;
+      document.getElementById("tetrisPanel").hidden = name !== "tetris";
+      document.getElementById("tetrisInfo").hidden = name !== "tetris";
+      oUI.panel.hidden = name !== "omok";
+      oUI.info.hidden = name !== "omok";
+      document.getElementById("chessPanel").hidden = name !== "chess";
+      document.getElementById("chessInfo").hidden = name !== "chess";
+      document.getElementById("qDodgePanel").hidden = name !== "qdodge";
+      document.getElementById("qDodgeInfo").hidden = name !== "qdodge";
+      document.getElementById("minesPanel").hidden = name !== "mines";
+      document.getElementById("minesInfo").hidden = name !== "mines";
+      document.getElementById("spotPanel").hidden = name !== "spot";
+      document.querySelector(".layout").classList.toggle("spot-layout",name === "spot");
+      if (typeof spSwitchVisibility === "function") spSwitchVisibility(name === "spot");
+      if (typeof msSwitchVisibility === "function") msSwitchVisibility(name === "mines");
+      if (name !== "qdodge" && typeof qState !== "undefined" && (qState === "playing" || qState === "countdown")) qSetPaused();
+      for (const [game,id] of [["tetris","selectTetris"],["omok","selectOmok"],["chess","selectChess"],["qdodge","selectQDodge"],["mines","selectMines"],["spot","selectSpot"]]) {
+        const btn = document.getElementById(id);
+        if (game === name) btn.setAttribute("aria-current", "page");
+        else btn.removeAttribute("aria-current");
+      }
+      if (name === "omok") drawOmok();
+    }
+
+    function omokResolveMove(x,y, fromComputer = false) {
+      if (oFinished || !omokInBounds(x,y) || oBoard[y][x] !== 0) return;
+      if (oPhase === "chooseA" || oPhase === "chooseB") {
+        omokSetMessage("먼저 교환 버튼에서 사용할 돌 색을 선택하세요.", "warning"); return;
+      }
+      if (oOpponent === "cpu" && oPhase === "play" && oColor === -1 && !fromComputer) return;
+      if (oMode === "renju" && oMoves.length === 0 && (x !== 7 || y !== 7)) {
+        omokSetMessage("렌주 규정: 흑의 첫 수는 반드시 중앙(H8)에 놓아야 합니다.","warning"); return;
+      }
+      const color = oColor;
+      oBoard[y][x] = color;
+      oMoves.push({x,y,color,player:omokCurrentActor()});
+      let verdict = "ok";
+      if (oMode === "renju" && color === 1 && oPhase === "play") {
+        verdict = omokBlackPlacedVerdict(oBoard, x, y);
+      }
+      let win = false;
+      if (verdict === "win") win = true;
+      else if (verdict === "ok") {
+        const lengths = omokLineLengths(oBoard, x, y, color);
+        win = lengths.some(n => oMode === "free" || (oMode === "renju" && color === -1) ? n >= 5 : n === 5);
+      }
+      if (["overline","double-four","double-three"].includes(verdict)) {
+        const reason = verdict === "overline" ? "장목(6목 이상)" : verdict === "double-four" ? "44(사사)" : "33(삼삼)";
+        omokFinish(-1, `흑의 ${reason} 금수로 반칙패! 백 승리입니다.`);
+      } else if (win) {
+        omokFinish(color, `${color === 1 ? "흑" : "백"}이(가) 5목을 완성했습니다! ${color === 1 ? "흑" : "백"} 승리입니다.`);
+      } else if (oMoves.length === OMOK_SIZE * OMOK_SIZE) {
+        omokFinish(0, "225개의 교차점이 모두 채워져 무승부입니다.");
+      } else if (oPhase === "setup3") {
+        oOpeningStage++;
+        if (oOpeningStage === 3) {
+          oPhase = "chooseB";
+          omokSetMessage("A의 개시 3수가 끝났습니다. B가 색을 고르거나 2수를 추가합니다.");
+        } else {
+          oColor = oOpeningStage === 1 ? -1 : 1;
+          omokSetMessage(`Swap2: A 플레이어가 ${oColor === 1 ? "흑" : "백"} ${oOpeningStage + 1}번째 돌을 놓으세요.`);
+        }
+      } else if (oPhase === "setup2") {
+        oOpeningStage++;
+        if (oOpeningStage === 2) {
+          oPhase = "chooseA";
+          omokSetMessage("B의 추가 2수가 끝났습니다. A가 사용할 색을 최종 선택합니다.");
+        } else {
+          oColor = 1;
+          omokSetMessage("Swap2: B 플레이어가 마지막 흑 돌을 놓으세요.");
+        }
+      } else {
+        oColor = -color;
+        omokSetMessage(`${color === 1 ? "흑" : "백"} ${omokCoordinate(x,y)} 착수 · ${oColor === 1 ? "흑" : "백"} 차례입니다.`);
+      }
+      omokUpdateUI();
+      if (!oFinished && oPhase === "play" && oColor === -1 && oOpponent === "cpu") {
+        oComputerTimer = setTimeout(omokComputerPlay, 360);
+      }
+    }
+
+    function omokChooseColor(color) {
+      if (oFinished || (oPhase !== "chooseB" && oPhase !== "chooseA")) return;
+      const chooser = oPhase === "chooseB" ? "B" : "A";
+      const other = chooser === "A" ? "B" : "A";
+      oPlayers[color] = chooser;
+      oPlayers[-color] = other;
+      oPhase = "play";
+      oColor = -1;
+      omokSetMessage(`${chooser}가 ${color === 1 ? "흑" : "백"}을 선택했습니다. ${oPlayers[-1]}(백) 차례입니다.`);
+      omokUpdateUI();
+    }
+    function omokAddTwo() {
+      if (oFinished || oPhase !== "chooseB") return;
+      oPhase = "setup2";
+      oOpeningStage = 0;
+      oColor = -1;
+      omokSetMessage("Swap2: B 플레이어가 추가 백 돌을 놓고, 이어 흑 돌을 놓습니다.");
+      omokUpdateUI();
+    }
+    function omokFinish(winner, message) {
+      if (oFinished) return;
+      clearTimeout(oComputerTimer);
+      oFinished = true;
+      oWinner = winner;
+      if (winner) oWins[winner]++;
+      omokSetMessage(message, "win");
+    }
+    function omokUndo() {
+      if (oMode === "gomoku") return;
+      clearTimeout(oComputerTimer);
+      if (!oMoves.length) return;
+      if (oFinished && oWinner) oWins[oWinner] = Math.max(0,oWins[oWinner]-1);
+      oFinished = false;
+      oWinner = 0;
+      let steps = 1;
+      if (oOpponent === "cpu") steps = oMoves[oMoves.length - 1].color === -1 ? 2 : 1;
+      while (steps-- > 0 && oMoves.length) {
+        const move = oMoves.pop();
+        oBoard[move.y][move.x] = 0;
+        oColor = move.color;
+      }
+      if (oOpponent === "cpu") oColor = 1;
+      omokSetMessage("마지막 수를 되돌렸습니다. 다시 착수하세요.");
+      omokUpdateUI();
+    }
+    function omokResign() {
+      if (oFinished || oPhase !== "play") return;
+      if (oOpponent === "cpu" && oColor === -1) return;
+      const loser = oOpponent === "cpu" ? 1 : oColor;
+      omokFinish(-loser, `${loser === 1 ? "흑" : "백"}이 기권해 ${loser === 1 ? "백" : "흑"} 승리입니다.`);
+      omokUpdateUI();
+    }
+
+    function omokStone(b, x, y, color, alpha=1) {
+      const px = O_PAD + x * O_STEP, py = O_PAD + y * O_STEP;
+      oCtx.save();
+      oCtx.globalAlpha = alpha;
+      oCtx.shadowColor = "rgba(32,19,12,.38)";
+      oCtx.shadowBlur = 6;
+      oCtx.shadowOffsetY = 3;
+      const grad = oCtx.createRadialGradient(px-6,py-7,1,px,py,19);
+      if (color === 1) { grad.addColorStop(0,"#56626b");grad.addColorStop(.5,"#252d34");grad.addColorStop(1,"#080b10"); }
+      else { grad.addColorStop(0,"#ffffff");grad.addColorStop(.7,"#f2f2ef");grad.addColorStop(1,"#bdc2c5"); }
+      oCtx.fillStyle = grad;
+      oCtx.beginPath(); oCtx.arc(px,py,17,0,Math.PI*2); oCtx.fill();
+      oCtx.restore();
+    }
+    function drawOmok() {
+      if (!oBoard) return;
+      const gr = oCtx.createLinearGradient(0,0,640,640);
+      gr.addColorStop(0,"#f3cb89"); gr.addColorStop(.52,"#dfb878"); gr.addColorStop(1,"#d3a166");
+      oCtx.fillStyle = gr;
+      oCtx.fillRect(0,0,640,640);
+      oCtx.strokeStyle = "#73502e";
+      oCtx.globalAlpha = .12;
+      for (let i=10; i<640; i+=26) {
+        oCtx.beginPath(); oCtx.moveTo(0,i); oCtx.bezierCurveTo(160,i-6,420,i+7,640,i-2); oCtx.stroke();
+      }
+      oCtx.globalAlpha = 1;
+      oCtx.lineWidth = 1.5;
+      oCtx.strokeStyle = "#4c351d";
+      for (let i=0;i<OMOK_SIZE;i++) {
+        const pos = O_PAD + i * O_STEP;
+        oCtx.beginPath();oCtx.moveTo(O_PAD,pos);oCtx.lineTo(O_PAD+14*O_STEP,pos);oCtx.stroke();
+        oCtx.beginPath();oCtx.moveTo(pos,O_PAD);oCtx.lineTo(pos,O_PAD+14*O_STEP);oCtx.stroke();
+      }
+      for (const [x,y] of [[3,3],[3,11],[7,7],[11,3],[11,11]]) {
+        oCtx.fillStyle = "#4c351d";
+        oCtx.beginPath();oCtx.arc(O_PAD+x*O_STEP,O_PAD+y*O_STEP,4,0,2*Math.PI);oCtx.fill();
+      }
+      oCtx.font = "bold 16px system-ui, sans-serif";
+      oCtx.fillStyle = "#6c4a2a";
+      oCtx.textAlign = "center";
+      oCtx.textBaseline = "middle";
+      for (let i=0;i<OMOK_SIZE;i++) {
+        oCtx.fillText(oLetters[i],O_PAD+i*O_STEP,20);
+        oCtx.fillText(String(15-i),19,O_PAD+i*O_STEP);
+      }
+      for (let y=0;y<OMOK_SIZE;y++) for (let x=0;x<OMOK_SIZE;x++) {
+        if (oBoard[y][x]) omokStone(oBoard,x,y,oBoard[y][x]);
+      }
+      if (oHover && !oFinished && !oPhase.startsWith("choose") &&
+          oBoard[oHover.y][oHover.x] === 0) {
+        omokStone(oBoard,oHover.x,oHover.y,oColor,.45);
+      }
+      if (oMoves.length) {
+        const {x,y} = oMoves[oMoves.length-1];
+        oCtx.beginPath();
+        oCtx.strokeStyle = "#ed5649";
+        oCtx.lineWidth = 3.2;
+        oCtx.arc(O_PAD+x*O_STEP,O_PAD+y*O_STEP,7,0,2*Math.PI);
+        oCtx.stroke();
+      }
+    }
+
+    function omokPointFromEvent(event) {
+      const box = oCanvas.getBoundingClientRect();
+      const sx = (event.clientX - box.left) * oCanvas.width / box.width;
+      const sy = (event.clientY - box.top) * oCanvas.height / box.height;
+      const x = Math.round((sx-O_PAD)/O_STEP), y = Math.round((sy-O_PAD)/O_STEP);
+      if (!omokInBounds(x,y)) return null;
+      if (Math.abs(sx-(O_PAD+x*O_STEP)) > O_STEP*.48 ||
+          Math.abs(sy-(O_PAD+y*O_STEP)) > O_STEP*.48) return null;
+      return {x,y};
+    }
+
+    function omokAllCandidates() {
+      const cells = new Map();
+      for (let y=0;y<OMOK_SIZE;y++) for (let x=0;x<OMOK_SIZE;x++) if (oBoard[y][x]) {
+        for (let dy=-2;dy<=2;dy++) for (let dx=-2;dx<=2;dx++) {
+          const xx=x+dx,yy=y+dy;
+          if (omokInBounds(xx,yy) && oBoard[yy][xx] === 0) cells.set(`${xx},${yy}`,{x:xx,y:yy});
+        }
+      }
+      return [...cells.values()];
+    }
+    // 지역 기반 휴리스틱 CPU (강한 대회용 엔진이 아닌 연습 상대)
+    function omokHeuristic(x,y,color) {
+      oBoard[y][x]=color;
+      const lens = omokLineLengths(oBoard,x,y,color);
+      const five = lens.some(v=>v>=5);
+      let value = five ? 900000 : 0;
+      for (const [dx,dy] of O_DIRS) {
+        let left=0,right=0;
+        for (let s=1;omokInBounds(x-dx*s,y-dy*s)&&oBoard[y-dy*s][x-dx*s]===color;s++)left++;
+        for (let s=1;omokInBounds(x+dx*s,y+dy*s)&&oBoard[y+dy*s][x+dx*s]===color;s++)right++;
+        const total=left+right+1;
+        const lX=x-dx*(left+1),lY=y-dy*(left+1),rX=x+dx*(right+1),rY=y+dy*(right+1);
+        const open=Number(omokInBounds(lX,lY)&&oBoard[lY][lX]===0)+
+          Number(omokInBounds(rX,rY)&&oBoard[rY][rX]===0);
+        if (total===4) value+=open===2?25000:open===1?5000:0;
+        if (total===3) value+=open===2?1750:open===1?280:0;
+        if (total===2) value+=open===2?100:open===1?18:0;
+        if (total>=5 && color===-1) value+=800000;
+        // 끊어진 3/4와 같은 모양도 반영합니다.
+        for(let start=-4;start<=0;start++){
+          let me=0, empty=0, other=0, valid=true;
+          for(let k=0;k<5;k++){
+            const px=x+dx*(start+k),py=y+dy*(start+k);
+            if(!omokInBounds(px,py)){valid=false;break;}
+            if(oBoard[py][px]===color)me++;
+            else if(oBoard[py][px]===0)empty++;
+            else other++;
+          }
+          if(valid && !other){ if(me===4)value+=1100;else if(me===3)value+=95; }
+        }
+      }
+      oBoard[y][x]=0;
+      return value;
+    }
+    function omokComputerPlay() {
+      if (oFinished || oMode==="gomoku" || oOpponent!=="cpu" || oColor!==-1) return;
+      const candidates = omokAllCandidates();
+      if (!candidates.length) { omokFinish(0,"착수할 곳이 없어 무승부입니다.");omokUpdateUI();return; }
+      let best = null, bestValue=-Infinity;
+      for (const cell of candidates) {
+        const offense=omokHeuristic(cell.x,cell.y,-1);
+        let defense=omokHeuristic(cell.x,cell.y,1);
+        // 흑에게는 금수가 될 수 있는 곳을 위협으로 과대평가하지 않습니다.
+        if (defense > 10000 && oMode==="renju") {
+          oBoard[cell.y][cell.x] = 1;
+          const legal = omokBlackPlacedVerdict(oBoard,cell.x,cell.y) === "ok" ||
+            omokLineLengths(oBoard,cell.x,cell.y,1).includes(5);
+          oBoard[cell.y][cell.x] = 0;
+          if(!legal) defense=0;
+        }
+        const value=offense*1.12+defense*.97+Math.random()*12;
+        if(value>bestValue){ bestValue=value;best=cell; }
+      }
+      if(best) omokResolveMove(best.x,best.y,true);
+    }
+
+    oCanvas.addEventListener("click", event => {
+      if (activeGame !== "omok") return;
+      const point = omokPointFromEvent(event);
+      if (point) omokResolveMove(point.x,point.y);
+    });
+    oCanvas.addEventListener("pointermove", event => {
+      if (activeGame !== "omok") return;
+      const newHover=omokPointFromEvent(event);
+      if ((newHover?.x !== oHover?.x) || (newHover?.y !== oHover?.y)) {
+        oHover=newHover;
+        drawOmok();
+      }
+    });
+    oCanvas.addEventListener("pointerleave", () => {oHover=null;drawOmok();});
+    oUI.chooseBlack.addEventListener("click",()=>omokChooseColor(1));
+    oUI.chooseWhite.addEventListener("click",()=>omokChooseColor(-1));
+    oUI.addTwo.addEventListener("click",omokAddTwo);
+    oUI.restart.addEventListener("click",omokReset);
+    oUI.undo.addEventListener("click",omokUndo);
+    oUI.resign.addEventListener("click",omokResign);
+    oUI.rules.addEventListener("change",()=>{
+      if (oUI.rules.value === "gomoku") oUI.opponent.value="local";
+      omokReset();
+    });
+    oUI.opponent.addEventListener("change",omokReset);
+    document.getElementById("selectTetris").addEventListener("click",()=>omokSwitchGame("tetris"));
+    document.getElementById("selectOmok").addEventListener("click",()=>omokSwitchGame("omok"));
+    omokReset();
+    document.getElementById("selectChess").addEventListener("click",()=>omokSwitchGame("chess"));
+    document.getElementById("selectQDodge").addEventListener("click",()=>omokSwitchGame("qdodge"));
+    document.getElementById("selectMines").addEventListener("click",()=>omokSwitchGame("mines"));
+    document.getElementById("selectSpot").addEventListener("click",()=>omokSwitchGame("spot"));
+
+    // ── GAME 03: CHESS ──
+    // FIDE Laws of Chess (2023, current): https://handbook.fide.com/chapter/E012023
+    // Digital local-play interpretation of the board-play rules; no arbiters or official clocks.
+    const CH_GLYPHS = {K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"\u265F\uFE0E",".":""};
+    const CH_NAMES = {p:"폰", n:"나이트", b:"비숍", r:"룩", q:"퀸", k:"킹"};
+    const CH_DIRS = {n:[-33,-31,-18,-14,14,18,31,33],b:[-17,-15,15,17],r:[-16,-1,1,16],k:[-17,-16,-15,-1,1,15,16,17]};
+    const CH_FILES = "abcdefgh";
+    const CH_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    const chOn = i => i >= 0 && i < 128 && !(i & 0x88);
+    const chSide = p => !p || p === "." ? 0 : p === p.toUpperCase() ? 1 : -1;
+    const chSq = i => CH_FILES[i & 7] + (8 - (i >> 4));
+    const chIndex = s => (8 - Number(s[1])) * 16 + CH_FILES.indexOf(s[0]);
+    const chMoveKey = m => chSq(m[0]) + chSq(m[1]) + m[2];
+    const chColorText = c => c === 1 ? "백" : "흑";
+
+    function chParseFen(fen) {
+      const f = fen.trim().split(/\s+/), rows = f[0].split("/"), b = Array(128).fill(".");
+      if (rows.length !== 8 || !/^[wb]$/.test(f[1]) || !/^(?:-|K?Q?k?q?)$/.test(f[2]) || !/^(?:-|[a-h][36])$/.test(f[3])) throw Error("올바르지 않은 FEN입니다.");
+      rows.forEach((row,r) => {
+        let c=0;
+        for (const p of row) {
+          if (/^[1-8]$/.test(p)) c+=Number(p);
+          else {if (!/^[prnbqkPRNBQK]$/.test(p) || c>=8) throw Error("FEN 행 오류"); b[r*16+c++]=p;}
+        }
+        if (c!==8) throw Error("FEN 행 길이 오류");
+      });
+      if (b.filter(p=>p==="K").length!==1 || b.filter(p=>p==="k").length!==1) throw Error("각 색 킹은 하나여야 합니다.");
+      const c = (f[2].includes("K")?1:0)|(f[2].includes("Q")?2:0)|(f[2].includes("k")?4:0)|(f[2].includes("q")?8:0);
+      return {b,t:f[1]==="w"?1:-1,c,ep:f[3]==="-"?-1:chIndex(f[3]),half:Number(f[4]||0),full:Number(f[5]||1)};
+    }
+
+    function chAttacked(s,target,by) {
+      for(let f=0;f<128;f++) {
+        if(!chOn(f)||chSide(s.b[f])!==by) continue;
+        const p=s.b[f].toLowerCase();
+        if(p==="p") {if(target===f-16*by-1 || target===f-16*by+1) return true;continue;}
+        const arr = p==="q" ? [...CH_DIRS.b,...CH_DIRS.r] : CH_DIRS[p];
+        for(const d of arr) for(let t=f+d;chOn(t);t+=d) {
+          if(t===target) return true;
+          if(s.b[t]!=="."||p==="n"||p==="k") break;
+        }
+      }
+      return false;
+    }
+    const chChecked = (s,color=s.t) => chAttacked(s,s.b.indexOf(color===1?"K":"k"),-color);
+    function chApply(s,m) {
+      const [f,t,promo,flag]=m, b=s.b.slice(), piece=b[f], captured=b[t];
+      let c=s.c;
+      b[f]=".";b[t]=promo?(s.t===1?promo.toUpperCase():promo):piece;
+      if(flag==="ep") b[t+16*s.t]=".";
+      if(flag==="castle") {
+        const rf=t>f?f+3:f-4, rt=t>f?f+1:f-1;
+        b[rt]=b[rf];b[rf]=".";
+      }
+      if(piece==="K")c&=~3;
+      if(piece==="k")c&=~12;
+      const rookBit={119:1,112:2,7:4,0:8};
+      if(piece.toLowerCase()==="r")c&=~(rookBit[f]||0);
+      if(captured.toLowerCase()==="r")c&=~(rookBit[t]||0);
+      return {b,t:-s.t,c,ep:piece.toLowerCase()==="p"&&Math.abs(t-f)===32?(t+f)/2:-1,
+        half:piece.toLowerCase()==="p"||captured!=="."||flag==="ep"?0:s.half+1,full:s.full+(s.t===-1?1:0)};
+    }
+    function chPseudo(s) {
+      const out=[];
+      for(let f=0;f<128;f++) {
+        if(!chOn(f)||chSide(s.b[f])!==s.t)continue;
+        const p=s.b[f].toLowerCase();
+        const add=(t,flag="")=>{
+          if(s.b[t].toLowerCase()==="k")return;
+          if(p==="p"&&((t>>4)===0||(t>>4)===7)) for(const q of ["q","r","b","n"])out.push([f,t,q,flag]);
+          else out.push([f,t,"",flag]);
+        };
+        if(p==="p") {
+          const t=f-16*s.t;
+          if(chOn(t)&&s.b[t]===".") {
+            add(t);const u=t-16*s.t;
+            if((f>>4)===(s.t===1?6:1)&&s.b[u]===".")add(u);
+          }
+          for(const d of [-1,1]) {
+            const u=t+d;if(!chOn(u))continue;
+            if(chSide(s.b[u])===-s.t)add(u);
+            else if(u===s.ep&&s.b[u]==="."&&s.b[u+16*s.t]===(s.t===1?"p":"P"))add(u,"ep");
+          }
+        } else {
+          const arr=p==="q"?[...CH_DIRS.b,...CH_DIRS.r]:CH_DIRS[p];
+          for(const d of arr)for(let t=f+d;chOn(t);t+=d){
+            if(chSide(s.b[t])===s.t)break;
+            add(t);
+            if(s.b[t]!=="."||p==="n"||p==="k")break;
+          }
+          const home=s.t===1?116:4, rook=s.t===1?"R":"r", bits=s.t===1?[1,2]:[4,8];
+          if(p==="k"&&f===home&&!chChecked(s)) {
+            if((s.c&bits[0])&&s.b[f+3]===rook&&s.b[f+1]==="."&&s.b[f+2]==="."&&
+               !chAttacked(s,f+1,-s.t)&&!chAttacked(s,f+2,-s.t))add(f+2,"castle");
+            if((s.c&bits[1])&&s.b[f-4]===rook&&s.b[f-1]==="."&&s.b[f-2]==="."&&s.b[f-3]==="."&&
+               !chAttacked(s,f-1,-s.t)&&!chAttacked(s,f-2,-s.t))add(f-2,"castle");
+          }
+        }
+      }
+      return out;
+    }
+    const chLegal = s => chPseudo(s).filter(m=>!chChecked(chApply(s,m),s.t));
+    function chSan(s,m) {
+      const [f,t,promo,flag]=m,p=s.b[f].toUpperCase(),cap=s.b[t]!=="."||flag==="ep";
+      let out="";
+      if(flag==="castle")out=t>f?"O-O":"O-O-O";
+      else {
+        if(p!=="P") {
+          out=p;
+          const other=chLegal(s).filter(x=>x[0]!==f&&x[1]===t&&s.b[x[0]]===s.b[f]);
+          if(other.length)out+=!other.some(x=>(x[0]&7)===(f&7))?chSq(f)[0]:
+            !other.some(x=>(x[0]>>4)===(f>>4))?chSq(f)[1]:chSq(f);
+        } else if(cap)out=chSq(f)[0];
+        out+=(cap?"x":"")+chSq(t)+(promo?"="+promo.toUpperCase():"");
+      }
+      const next=chApply(s,m);
+      return out+(chChecked(next)?chLegal(next).length?"+":"#":"");
+    }
+    // For position identity, EP only distinguishes positions if an EP capture is actually legal.
+    function chPositionKey(s) {
+      const ep=s.ep>=0&&chLegal(s).some(m=>m[3]==="ep")?s.ep:-1;
+      return s.b.join("")+":"+s.t+":"+s.c+":"+ep;
+    }
+    function chDeadPosition(s) {
+      const pieces=[];
+      for(let i=0;i<128;i++)if(chOn(i)&&s.b[i]!=="."&&s.b[i].toLowerCase()!=="k")
+        pieces.push([s.b[i].toLowerCase(),((i>>4)+(i&7))%2]);
+      return pieces.length===0 ||
+        (pieces.length===1&&["b","n"].includes(pieces[0][0])) ||
+        (pieces.every(p=>p[0]==="b") && new Set(pieces.map(p=>p[1])).size===1);
+    }
+    function chStatus(history) {
+      const s=history[history.length-1], moves=chLegal(s), check=chChecked(s);
+      const key=chPositionKey(s), repetition=history.filter(p=>chPositionKey(p)===key).length;
+      if(!moves.length)return {done:true,winner:check?-s.t:0,message:check?`체크메이트! ${chColorText(-s.t)} 승리입니다.`:"스테일메이트 — 무승부입니다.",claims:[],intent:[],moves};
+      if(chDeadPosition(s))return {done:true,winner:0,message:"양쪽 모두 체크메이트가 불가능한 포지션 — 무승부입니다.",claims:[],intent:[],moves};
+      if(s.half>=150||repetition>=5)return {done:true,winner:0,message:s.half>=150?"75수 규칙 — 자동 무승부입니다.":"동일 포지션 5회 반복 — 자동 무승부입니다.",claims:[],intent:[],moves};
+      const claims=[];
+      if(repetition>=3)claims.push("동일 포지션 3회 반복");
+      if(s.half>=100)claims.push("50수 규칙");
+      const intent=[];
+      if(history.length>=7||s.half>=99)for(const m of moves) {
+        const ns=chApply(s,m),nKey=chPositionKey(ns);
+        const matches=history.reduce((sum,p)=>sum+(chPositionKey(p)===nKey?1:0),0);
+        if(matches>=2||ns.half>=100) intent.push({m,why:matches>=2?"3회 반복":"50수 규칙"});
+      }
+      return {done:false,winner:null,message:`${chColorText(s.t)} 차례${check?" · 체크!":""}`,claims,intent,moves};
+    }
+
+    const chUI = {
+      panel:document.getElementById("chessPanel"),info:document.getElementById("chessInfo"),
+      board:document.getElementById("chessBoard"),status:document.getElementById("chessStatus"),
+      msg:document.getElementById("chessMessage"),opponent:document.getElementById("chessOpponent"),
+      restart:document.getElementById("chessRestart"),undo:document.getElementById("chessUndo"),
+      resign:document.getElementById("chessResign"),offer:document.getElementById("chessOffer"),
+      agree:document.getElementById("chessAgree"),decline:document.getElementById("chessDecline"),
+      drawResponse:document.getElementById("chessDrawResponse"),
+      moves:document.getElementById("chessMoves"),turn:document.getElementById("chessTurn"),
+      moveNum:document.getElementById("chessMoveNum"),whiteWins:document.getElementById("chessWhiteWins"),
+      blackWins:document.getElementById("chessBlackWins"),drawCount:document.getElementById("chessDrawCount"),
+      promotion:document.getElementById("chessPromotion"),
+      drawClaims:document.getElementById("chessDrawClaims"),
+      claimNow:document.getElementById("chessClaimNow"),claimNext:document.getElementById("chessClaimNext"),
+      intendedMove:document.getElementById("chessIntendedMove"),
+    };
+    let chHistory=[chParseFen(CH_START_FEN)],chNotation=[],chSelected=-1,chPending=null,chEnded=false,chMsg="",
+        chDrawOffer=false,chCpuTimer=null,chScores={1:0,"-1":0,draw:0};
+    const chSquareElements=new Map();
+    for(let row=0;row<8;row++)for(let col=0;col<8;col++) {
+      const i=row*16+col, btn=document.createElement("button");
+      btn.type="button";btn.className="chess-square "+(((row+col)%2)===0?"light":"dark");
+      btn.dataset.sq=chSq(i);btn.setAttribute("role","gridcell");
+      btn.addEventListener("click",()=>chClick(i));
+      chSquareElements.set(i,btn);chUI.board.appendChild(btn);
+    }
+    const chCurrent=()=>chHistory[chHistory.length-1];
+    const chCpuTurn=()=>chUI.opponent.value==="cpu"&&chCurrent().t===-1;
+    function chUpdate() {
+      const s=chCurrent(), st=chStatus(chHistory), legal=st.moves;
+      if(st.done&&!chEnded){chFinish(st.winner,st.message);}
+      const validDest=new Set(legal.filter(m=>m[0]===chSelected).map(m=>m[1]));
+      const last=chNotation.length?chNotation[chNotation.length-1].move:null;
+      const checkKing=chChecked(s)?s.b.indexOf(s.t===1?"K":"k"):-1;
+      for(const [i,btn] of chSquareElements) {
+        const p=s.b[i],colored=chSide(p),name=chSq(i);
+        btn.textContent=CH_GLYPHS[p];
+        btn.classList.toggle("white-piece",colored===1);
+        btn.classList.toggle("black-piece",colored===-1);
+        btn.classList.toggle("selected",chSelected===i);
+        btn.classList.toggle("legal-dest",validDest.has(i)&&p===".");
+        btn.classList.toggle("legal-capture",validDest.has(i)&&p!==".");
+        btn.classList.toggle("last-move",!!last&&(last[0]===i||last[1]===i));
+        btn.classList.toggle("in-check",checkKing===i);
+        btn.setAttribute("aria-label",`${name} ${p==="."?"빈칸":(colored===1?"백 ":"흑 ")+CH_NAMES[p.toLowerCase()]}`);
+        btn.disabled=chEnded;
+      }
+      const text=chEnded?chMsg:st.message;
+      chUI.status.textContent=chEnded?(chMsg.includes("승리")?"대국 종료":"무승부 / 종료"):st.message;
+      chUI.msg.textContent=chMsg||st.message+(chCpuTurn()?" · 컴퓨터가 생각 중입니다.":" · 기물을 선택한 후 표시된 칸을 누르세요.");
+      chUI.msg.className="omok-message"+(chEnded?" win":chChecked(s)?" warning":"");
+      chUI.turn.textContent=chEnded?"종료":chColorText(s.t);
+      chUI.moveNum.textContent=String(chNotation.length);
+      chUI.whiteWins.textContent=chScores[1];chUI.blackWins.textContent=chScores[-1];chUI.drawCount.textContent=chScores.draw;
+      chUI.undo.disabled=chHistory.length<=1||chEnded;
+      chUI.resign.disabled=chEnded;
+      chUI.offer.disabled=chEnded||chNotation.length<2||chUI.opponent.value==="cpu"||chDrawOffer;
+      chUI.drawResponse.hidden=!chDrawOffer||chEnded;
+      chUI.promotion.hidden=!chPending;
+      const rows=[];
+      for(let j=0;j<chNotation.length;j+=2) {
+        rows.push(`<div class="chess-move-row"><b>${Math.floor(j/2)+1}.</b><span>${chNotation[j].san}</span><span>${chNotation[j+1]?.san||""}</span></div>`);
+      }
+      chUI.moves.innerHTML=rows.join("")||"아직 둔 수가 없습니다.";
+      chUI.moves.scrollTop=chUI.moves.scrollHeight;
+      // FIDE: Threefold/50-move draws are claimed, while fivefold/75-move draws are automatic.
+      const humanTurn=!chCpuTurn()&&!chEnded;
+      chUI.drawClaims.hidden=!(humanTurn&&(st.claims.length||st.intent.length));
+      chUI.claimNow.hidden=!st.claims.length;
+      if(st.claims.length)chUI.claimNow.textContent=`무승부 청구 (${st.claims.join(" · ")})`;
+      chUI.intendedMove.hidden=!st.intent.length;
+      chUI.claimNext.hidden=!st.intent.length;
+      chUI.intendedMove.innerHTML="";
+      for(const e of st.intent) {
+        const option=document.createElement("option");option.value=chMoveKey(e.m);
+        option.textContent=`${chSan(s,e.m)} — ${e.why}`;chUI.intendedMove.appendChild(option);
+      }
+    }
+    function chFinish(winner,message) {
+      if(chEnded)return;
+      chEnded=true;chMsg=message;
+      if(winner===0)chScores.draw++;else chScores[winner]++;
+      clearTimeout(chCpuTimer);
+      chDrawOffer=false;chSelected=-1;chPending=null;
+    }
+    function chPlay(m) {
+      if(chEnded)return;
+      const s=chCurrent(),legal=chLegal(s),found=legal.find(x=>chMoveKey(x)===chMoveKey(m));
+      if(!found)return;
+      chNotation.push({san:chSan(s,found),move:found});
+      chHistory.push(chApply(s,found));chSelected=-1;chPending=null;chMsg="";chDrawOffer=false;
+      chUpdate();
+      if(!chEnded&&chCpuTurn())chPlanCpu();
+    }
+    function chClick(i) {
+      if(activeGame!=="chess"||chEnded||chPending||chCpuTurn())return;
+      const s=chCurrent();
+      if(chSide(s.b[i])===s.t){chSelected=(chSelected===i)?-1:i;chMsg="";chUpdate();return;}
+      const choices=chLegal(s).filter(m=>m[0]===chSelected&&m[1]===i);
+      if(choices.length>1){chPending=choices;chMsg="승격할 기물을 선택하세요.";chUpdate();}
+      else if(choices.length===1)chPlay(choices[0]);
+      else {chMsg="이 칸으로는 이동할 수 없습니다. 표시된 칸을 선택하세요.";chUpdate();}
+    }
+    function chUndo() {
+      if(chHistory.length<2||chEnded)return;
+      clearTimeout(chCpuTimer);
+      let n=chUI.opponent.value==="cpu"?Math.min(2,chHistory.length-1):1;
+      // When the computer has not replied yet, undo only the human move.
+      if(chUI.opponent.value==="cpu"&&chCurrent().t===-1)n=1;
+      chHistory.splice(-n);chNotation.splice(-n);
+      chSelected=-1;chPending=null;chDrawOffer=false;chMsg="이전 수로 돌아갔습니다.";
+      chUpdate();
+    }
+    function chRestart() {
+      clearTimeout(chCpuTimer);
+      chHistory=[chParseFen(CH_START_FEN)];chNotation=[];chSelected=-1;chPending=null;
+      chEnded=false;chMsg="새 대국이 시작됐습니다. 백이 먼저 둡니다.";chDrawOffer=false;
+      chUpdate();
+    }
+    function chEvaluate(s) {
+      const w={p:100,n:315,b:335,r:500,q:910,k:0};let val=0;
+      for(let i=0;i<128;i++)if(chOn(i)&&s.b[i]!==".") {
+        const p=s.b[i].toLowerCase(),side=chSide(s.b[i]);
+        const file=i&7,rank=i>>4,center=6-Math.abs(file-3.5)-Math.abs(rank-3.5);
+        const advance=p==="p"?(side===-1?rank:(7-rank))*6:0;
+        val+=(w[p]+center*3+advance)*(side===-1?1:-1);
+      }
+      return val;
+    }
+    function chCpuPick() {
+      const s=chCurrent(),moves=chLegal(s);
+      let best=-Infinity,choice=moves[0];
+      for(const m of moves) {
+        const ns=chApply(s,m),replies=chLegal(ns);
+        let score;
+        if(!replies.length)score=chChecked(ns)?100000:0;
+        else if(chDeadPosition(ns))score=0;
+        else {
+          score=Infinity;
+          for(const r of replies) {
+            const child=chApply(ns,r),replyMoves=chLegal(child);
+            const v=!replyMoves.length&&chChecked(child)?-100000:chEvaluate(child);
+            if(v<score)score=v;
+          }
+        }
+        score+=Math.random()*7;
+        if(score>best){best=score;choice=m;}
+      }
+      return choice;
+    }
+    function chPlanCpu() {
+      clearTimeout(chCpuTimer);
+      if(chEnded||!chCpuTurn())return;
+      chCpuTimer=setTimeout(()=>{
+        if(chEnded||!chCpuTurn())return;
+        const m=chCpuPick();if(m)chPlay(m);
+      },330);
+    }
+    function chClaimDraw(reason) {
+      if(chEnded)return;
+      chFinish(0,`${reason}에 따라 무승부가 성립했습니다.`);chUpdate();
+    }
+    chUI.board.addEventListener("keydown",event=>{
+      if(event.key==="Escape"&&chSelected>=0){chSelected=-1;chMsg="";chUpdate();}
+    });
+    document.querySelectorAll("[data-chess-promotion]").forEach(btn=>btn.addEventListener("click",()=>{
+      if(!chPending)return;
+      const m=chPending.find(p=>p[2]===btn.dataset.chessPromotion);
+      if(m)chPlay(m);
+    }));
+    document.getElementById("chessPromotionCancel").addEventListener("click",()=>{chPending=null;chMsg="";chUpdate();});
+    chUI.opponent.addEventListener("change",chRestart);
+    chUI.restart.addEventListener("click",chRestart);
+    chUI.undo.addEventListener("click",chUndo);
+    chUI.resign.addEventListener("click",()=>{
+      if(chEnded)return;
+      const loser=chCurrent().t;
+      chFinish(-loser,`${chColorText(loser)} 기권 — ${chColorText(-loser)} 승리입니다.`);chUpdate();
+    });
+    chUI.offer.addEventListener("click",()=>{
+      if(chEnded||chUI.opponent.value!=="local"||chNotation.length<2)return;
+      chDrawOffer=true;chMsg=`${chColorText(chCurrent().t)}이 무승부를 제안했습니다. 상대가 수락할까요?`;chUpdate();
+    });
+    chUI.agree.addEventListener("click",()=>chClaimDraw("양측 합의"));
+    chUI.decline.addEventListener("click",()=>{chDrawOffer=false;chMsg="무승부 제안이 거절됐습니다.";chUpdate();});
+    chUI.claimNow.addEventListener("click",()=>{
+      const st=chStatus(chHistory);
+      if(st.claims.length&&!chEnded&&!chCpuTurn())chClaimDraw(st.claims.join(" · "));
+    });
+    chUI.claimNext.addEventListener("click",()=>{
+      const st=chStatus(chHistory),choice=st.intent.find(x=>chMoveKey(x.m)===chUI.intendedMove.value);
+      if(choice&&!chEnded&&!chCpuTurn())chClaimDraw(`다음 수 ${chSan(chCurrent(),choice.m)} 선언 (${choice.why})`);
+    });
+    chRestart();
+
+
+    // ── GAME 04: Q DODGE · LOCAL 2–3 PLAYER SURVIVAL ──
+    // A standalone, canvas-based skillshot dodge arena. No external assets or libraries.
+    const QW = 840, QH = 520;
+    const qCanvas = document.getElementById("qCanvas"), qCtx = qCanvas.getContext("2d");
+    const qUI = {
+      overlay: document.getElementById("qOverlay"), badge: document.getElementById("qOverlayBadge"),
+      title: document.getElementById("qOverlayTitle"), text: document.getElementById("qOverlayText"),
+      status: document.getElementById("qStatus"), count: document.getElementById("qPlayerCount"),
+      difficulty: document.getElementById("qDifficulty"), players: document.getElementById("qPlayers"),
+      touch: document.getElementById("qTouchpads"), survivors: document.getElementById("qSurvivorCount"),
+      match: document.getElementById("qMatchType"), time: document.getElementById("qElapsed"),
+      best: document.getElementById("qBestTime"), shots: document.getElementById("qShots"),
+      start: document.getElementById("qStart"), pause: document.getElementById("qPause"),
+      restart: document.getElementById("qRestart")
+    };
+    const Q_CONFIGS = [
+      {name:"플레이어 1", color:"#56e5e7", keyNames:["W","A","S","D"], keys:["KeyW","KeyA","KeyS","KeyD"]},
+      {name:"플레이어 2", color:"#ffd66e", keyNames:["↑","←","↓","→"], keys:["ArrowUp","ArrowLeft","ArrowDown","ArrowRight"]},
+      {name:"플레이어 3", color:"#cba0ff", keyNames:["I","J","K","L"], keys:["KeyI","KeyJ","KeyK","KeyL"]}
+    ];
+    const Q_DIFFICULTY = {
+      easy:{interval:1.38, speed:300, warn:0.68},
+      normal:{interval:1.05, speed:385, warn:0.55},
+      hard:{interval:0.74, speed:480, warn:0.42}
+    };
+    let qState = "ready", qPlayers = [], qBolts = [], qWarnings = [], qParticles = [];
+    let qHeld = new Set(), qTouchHeld = [new Set(),new Set(),new Set()];
+    let qElapsed = 0, qCountdown = 0, qNextShot = 0, qShots = 0, qLastFrame = 0;
+    let qWinner = "", qBestTime = 0, qNextId = 0;
+    try { qBestTime = Number(localStorage.getItem("pixelplay_q_best") || 0) || 0; } catch(e) {}
+    const qRng = (lo,hi) => lo + Math.random() * (hi-lo);
+    const qClamp = (n,lo,hi) => Math.max(lo,Math.min(hi,n));
+    const qAlive = () => qPlayers.filter(p => p.hp > 0);
+    function qResetInputs() { qHeld.clear(); for(const s of qTouchHeld)s.clear(); }
+    function qUpdateOverlay(badge,title,text) {
+      qUI.badge.textContent=badge; qUI.title.textContent=title; qUI.text.textContent=text;
+      qUI.overlay.hidden=false;
+    }
+    function qStatusUI() {
+      qUI.status.textContent = ({ready:"시작 대기",countdown:"곧 시작",playing:"진행 중",paused:"일시정지",finished:"경기 종료"})[qState];
+      qUI.start.textContent = qState==="playing"||qState==="countdown" ? "▶ 진행 중" : qState==="paused" ? "▶ 이어하기" : qState==="finished" ? "↻ 다시 도전" : "▶ 게임 시작";
+      qUI.start.disabled = qState==="playing" || qState==="countdown";
+      qUI.pause.disabled = !["playing","countdown","paused"].includes(qState);
+      qUI.pause.textContent = qState==="paused" ? "▶ 계속하기" : "⏸ 일시정지";
+      qUI.match.textContent = qPlayers.length+"인 대전";
+      qUI.time.textContent = qElapsed.toFixed(1);
+      qUI.best.textContent = qBestTime.toFixed(1)+"초";
+      qUI.shots.textContent = qShots;
+      qUI.survivors.textContent = qAlive().length+"명";
+      qUI.players.innerHTML = qPlayers.map(p => {
+        const conf = Q_CONFIGS[p.id];
+        return `<div class="q-player-card ${p.hp<=0?"dead":""}" style="--pc:${conf.color}">
+          <div class="q-head"><span>● ${conf.name}</span><span class="q-hearts">${"♥".repeat(p.hp)}${"♡".repeat(3-p.hp)}</span></div>
+          <p>${p.hp>0?"생존 중":`탈락 · ${p.deathTime.toFixed(1)}초 생존`}</p>
+          <div class="q-keys">상 ↑ <span class="q-key">${conf.keyNames[0]}</span> · 좌 <span class="q-key">${conf.keyNames[1]}</span> · 하 <span class="q-key">${conf.keyNames[2]}</span> · 우 <span class="q-key">${conf.keyNames[3]}</span></div>
+        </div>`;
+      }).join("");
+    }
+    function qBuildTouchpads() {
+      qUI.touch.replaceChildren();
+      qPlayers.forEach(p => {
+        const node = document.createElement("div");
+        node.className="q-touchpad";
+        node.style.setProperty("--pc",Q_CONFIGS[p.id].color);
+        const head=document.createElement("strong");head.textContent=`P${p.id+1} 터치 이동`;
+        node.appendChild(head);
+        const grid=document.createElement("div"); grid.className="q-padgrid";
+        for(const [dir,txt] of [["up","▲"],["left","◀"],["down","▼"],["right","▶"]]) {
+          const btn=document.createElement("button");btn.type="button";btn.dataset.dir=dir;btn.textContent=txt;
+          const release = e => { qTouchHeld[p.id].delete(dir); if(e && btn.hasPointerCapture?.(e.pointerId))btn.releasePointerCapture(e.pointerId); };
+          btn.addEventListener("pointerdown",e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);qTouchHeld[p.id].add(dir);});
+          btn.addEventListener("pointerup",release);btn.addEventListener("pointercancel",release);
+          btn.addEventListener("lostpointercapture",()=>qTouchHeld[p.id].delete(dir));
+          grid.appendChild(btn);
+        }
+        node.appendChild(grid);qUI.touch.appendChild(node);
+      });
+    }
+    function qReset() {
+      qState="ready"; qElapsed=0; qCountdown=0; qShots=0; qNextId=0; qNextShot=0;
+      qBolts=[]; qWarnings=[]; qParticles=[]; qWinner=""; qResetInputs();
+      const count=Number(qUI.count.value);
+      qPlayers=Q_CONFIGS.slice(0,count).map((conf,id)=>({
+        id, x:count===2?(id===0?QW*.32:QW*.68):(QW*(.26+id*.24)),
+        y:QH*.68 + (id%2)*24, r:15, hp:3, invulnerable:0, deathTime:0, trail:[]
+      }));
+      qUI.overlay.hidden=false;
+      qUpdateOverlay("LOCAL MULTIPLAYER", "Q를 피하고 살아남아라!",
+        `${count}명이 각자의 조작키를 사용합니다. 날아오는 Q를 피해 마지막 생존자가 되세요.`);
+      qBuildTouchpads();qStatusUI();qDraw();
+    }
+    function qStart() {
+      if(qState==="paused") { qState=qCountdown>0?"countdown":"playing";qUI.overlay.hidden=true;qStatusUI();return; }
+      if(qState==="finished")qReset();
+      if(qState!=="ready")return;
+      qState="countdown";qCountdown=3.0;qNextShot=0.6;qUI.overlay.hidden=false;
+      qUpdateOverlay("GET READY", "3", "각자 이동키를 준비하세요. 카운트다운 후 Q가 날아옵니다!");
+      qStatusUI();
+    }
+    function qSetPaused() {
+      if(qState==="playing"||qState==="countdown"){
+        qState="paused";qResetInputs();
+        qUpdateOverlay("PAUSED", "일시정지", "계속하려면 일시정지 또는 게임 시작 버튼을 누르세요.");
+      } else if(qState==="paused") {
+        qState=qCountdown>0?"countdown":"playing";qUI.overlay.hidden=true;
+      }
+      qStatusUI();
+    }
+    function qSpawnWarning() {
+      const alive=qAlive(); if(!alive.length)return;
+      const target=alive[Math.floor(Math.random()*alive.length)];
+      const edge=Math.floor(Math.random()*4),margin=24;
+      let x,y;
+      if(edge===0){x=qRng(16,QW-16);y=-margin;}
+      else if(edge===1){x=QW+margin;y=qRng(16,QH-16);}
+      else if(edge===2){x=qRng(16,QW-16);y=QH+margin;}
+      else{x=-margin;y=qRng(16,QH-16);}
+      // Aim is LOCKED at warning creation, so players have an honest chance to dodge.
+      const aimx=target.x+qRng(-10,10),aimy=target.y+qRng(-10,10);
+      let dx=aimx-x,dy=aimy-y;
+      const len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;
+      const diff=Q_DIFFICULTY[qUI.difficulty.value], extra=Math.min(210,qElapsed*3.1);
+      qWarnings.push({x,y,dx,dy,remaining:diff.warn,speed:diff.speed+extra,id:qNextId++});
+    }
+    function qShoot(w) {
+      qBolts.push({x:w.x,y:w.y,dx:w.dx,dy:w.dy,speed:w.speed,r:9,len:34,life:4});
+      qShots++;
+      for(let i=0;i<9;i++)qParticles.push({x:w.x,y:w.y,vx:qRng(-100,100),vy:qRng(-100,100),life:qRng(.15,.55),color:"#55e8fb"});
+    }
+    function qMovePlayers(dt) {
+      for(const p of qPlayers) {
+        if(p.hp<=0)continue;
+        const keys=Q_CONFIGS[p.id].keys, touch=qTouchHeld[p.id];
+        const on = (i,dir)=>qHeld.has(keys[i])||touch.has(dir);
+        const dx=Number(on(3,"right"))-Number(on(1,"left"));
+        const dy=Number(on(2,"down"))-Number(on(0,"up"));
+        const mag=Math.hypot(dx,dy)||1;
+        const speed=230;
+        p.x=qClamp(p.x+dx/mag*speed*dt,p.r+10,QW-p.r-10);
+        p.y=qClamp(p.y+dy/mag*speed*dt,p.r+10,QH-p.r-10);
+        p.invulnerable=Math.max(0,p.invulnerable-dt);
+        if(dx||dy){p.trail.push({x:p.x,y:p.y,ttl:.18});if(p.trail.length>8)p.trail.shift();}
+        for(const pt of p.trail)pt.ttl-=dt;
+        p.trail=p.trail.filter(pt=>pt.ttl>0);
+      }
+    }
+    function qSegmentDistSq(px,py,ax,ay,bx,by) {
+      const vx=bx-ax,vy=by-ay;
+      const t=qClamp(((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy||1),0,1);
+      const ex=px-(ax+t*vx),ey=py-(ay+t*vy);
+      return ex*ex+ey*ey;
+    }
+    function qHit(p) {
+      p.hp--;p.invulnerable=1.05;
+      const color=Q_CONFIGS[p.id].color;
+      for(let i=0;i<22;i++)qParticles.push({x:p.x,y:p.y,vx:qRng(-170,170),vy:qRng(-170,170),life:qRng(.25,.7),color});
+      if(p.hp===0)p.deathTime=qElapsed;
+    }
+    function qEnd() {
+      qState="finished";qResetInputs();
+      const remaining=qAlive();
+      if(remaining.length===1)qWinner=Q_CONFIGS[remaining[0].id].name;
+      else if(!remaining.length){
+        const max=Math.max(...qPlayers.map(p=>p.deathTime));
+        const winners=qPlayers.filter(p=>Math.abs(p.deathTime-max)<.001);
+        qWinner=winners.length>1?"공동 생존":Q_CONFIGS[winners[0].id].name;
+      }
+      qBestTime=Math.max(qBestTime,qElapsed);
+      try { localStorage.setItem("pixelplay_q_best",String(qBestTime)); }catch(e){}
+      qUpdateOverlay("MATCH COMPLETE", qWinner==="공동 생존"?"공동 승리!":`${qWinner} 승리!`,
+        `${qElapsed.toFixed(1)}초 동안 버텼습니다. 새 경기 버튼 또는 Enter 키로 다시 플레이할 수 있어요.`);
+      qStatusUI();
+    }
+    function qAdvance(dt) {
+      if(qState==="countdown") {
+        qCountdown-=dt;
+        if(qCountdown<=0){qCountdown=0;qState="playing";qUI.overlay.hidden=true;}
+        else qUI.title.textContent=String(Math.ceil(qCountdown));
+        if(qState!=="playing")return;
+      }
+      if(qState!=="playing")return;
+      qElapsed+=dt;
+      qMovePlayers(dt);
+      qNextShot-=dt;
+      if(qNextShot<=0) {
+        qSpawnWarning();
+        const diff=Q_DIFFICULTY[qUI.difficulty.value];
+        const interval=Math.max(.34,diff.interval/(1+qElapsed*.015));
+        qNextShot+=interval;
+        if(qElapsed>23&&Math.random()<.33)qNextShot=Math.min(qNextShot,.18);
+      }
+      for(let i=qWarnings.length-1;i>=0;i--){
+        const w=qWarnings[i];w.remaining-=dt;
+        if(w.remaining<=0){qShoot(w);qWarnings.splice(i,1);}
+      }
+      for(let i=qBolts.length-1;i>=0;i--) {
+        const b=qBolts[i],sx=b.x,sy=b.y;
+        b.x+=b.dx*b.speed*dt;b.y+=b.dy*b.speed*dt;b.life-=dt;
+        for(const p of qPlayers) {
+          if(p.hp<=0||p.invulnerable>0)continue;
+          // Swept collision from the old tail to the new nose avoids tunneling.
+          if(qSegmentDistSq(p.x,p.y,sx-b.dx*b.len,sy-b.dy*b.len,b.x+b.dx*8,b.y+b.dy*8) <= (p.r+b.r)*(p.r+b.r))qHit(p);
+        }
+        if(b.life<=0||b.x<-70||b.y<-70||b.x>QW+70||b.y>QH+70)qBolts.splice(i,1);
+      }
+      for(let i=qParticles.length-1;i>=0;i--){
+        const p=qParticles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
+        if(p.life<=0)qParticles.splice(i,1);
+      }
+      if(qAlive().length<=1)qEnd();
+    }
+    function qBackground() {
+      const g=qCtx.createLinearGradient(0,0,QW,QH);
+      g.addColorStop(0,"#0b2235");g.addColorStop(.6,"#10233c");g.addColorStop(1,"#091626");
+      qCtx.fillStyle=g;qCtx.fillRect(0,0,QW,QH);
+      qCtx.strokeStyle="#2a526344";qCtx.lineWidth=1;
+      for(let x=20;x<QW;x+=40){qCtx.beginPath();qCtx.moveTo(x,0);qCtx.lineTo(x,QH);qCtx.stroke();}
+      for(let y=20;y<QH;y+=40){qCtx.beginPath();qCtx.moveTo(0,y);qCtx.lineTo(QW,y);qCtx.stroke();}
+      qCtx.strokeStyle="#2fbfd777";qCtx.lineWidth=3;qCtx.strokeRect(9,9,QW-18,QH-18);
+      qCtx.strokeStyle="#2fbfd722";qCtx.lineWidth=1;qCtx.strokeRect(22,22,QW-44,QH-44);
+      qCtx.textAlign="center";qCtx.font="900 25px system-ui";qCtx.fillStyle="#c0fbff11";
+      qCtx.fillText("Q   D O D G E    A R E N A",QW/2,QH/2);
+    }
+    function qDraw() {
+      qCtx.clearRect(0,0,QW,QH);qBackground();
+      const now=performance.now()/1000;
+      for(const w of qWarnings){
+        qCtx.save();qCtx.globalAlpha=.28+.45*Math.abs(Math.sin(now*13));
+        qCtx.setLineDash([11,9]);qCtx.strokeStyle="#4ae9f8";qCtx.lineWidth=5;
+        qCtx.beginPath();qCtx.moveTo(w.x,w.y);qCtx.lineTo(w.x+w.dx*1200,w.y+w.dy*1200);qCtx.stroke();
+        qCtx.setLineDash([]);qCtx.fillStyle="#5af0ff";qCtx.beginPath();qCtx.arc(w.x,w.y,12,0,Math.PI*2);qCtx.fill();
+        qCtx.restore();
+      }
+      for(const b of qBolts) {
+        const tailX=b.x-b.dx*b.len,tailY=b.y-b.dy*b.len;
+        qCtx.save();qCtx.lineCap="round";qCtx.shadowColor="#2fddfb";qCtx.shadowBlur=19;
+        qCtx.strokeStyle="#258cc7";qCtx.lineWidth=23;
+        qCtx.beginPath();qCtx.moveTo(tailX,tailY);qCtx.lineTo(b.x,b.y);qCtx.stroke();
+        qCtx.strokeStyle="#8ef8ff";qCtx.lineWidth=8;qCtx.beginPath();qCtx.moveTo(tailX,tailY);qCtx.lineTo(b.x,b.y);qCtx.stroke();
+        qCtx.fillStyle="#ecffff";qCtx.beginPath();qCtx.arc(b.x,b.y,5,0,Math.PI*2);qCtx.fill();
+        qCtx.restore();
+      }
+      for(const part of qParticles){
+        qCtx.globalAlpha=Math.min(1,part.life*2);qCtx.fillStyle=part.color;
+        qCtx.fillRect(part.x-2,part.y-2,4,4);
+      }
+      qCtx.globalAlpha=1;
+      qPlayers.forEach(p=>{
+        if(p.hp<=0)return;
+        const color=Q_CONFIGS[p.id].color;
+        for(const t of p.trail){qCtx.globalAlpha=t.ttl/.18*.25;qCtx.fillStyle=color;qCtx.beginPath();qCtx.arc(t.x,t.y,p.r,0,Math.PI*2);qCtx.fill();}
+        qCtx.save();qCtx.globalAlpha=(p.invulnerable>0&&Math.floor(now*12)%2===0)?0.42:1;
+        qCtx.shadowColor=color;qCtx.shadowBlur=21;qCtx.fillStyle=color;
+        qCtx.beginPath();qCtx.arc(p.x,p.y,p.r,0,Math.PI*2);qCtx.fill();
+        qCtx.shadowBlur=0;qCtx.fillStyle="#071420";qCtx.font="900 17px system-ui";
+        qCtx.textAlign="center";qCtx.textBaseline="middle";qCtx.fillText(String(p.id+1),p.x,p.y+1);
+        qCtx.strokeStyle="#ffffffaf";qCtx.lineWidth=2;qCtx.stroke();
+        qCtx.font="bold 13px system-ui";qCtx.fillStyle="#edfaff";qCtx.fillText("♥".repeat(p.hp),p.x,p.y-30);
+        qCtx.restore();
+      });
+      qCtx.globalAlpha=1;
+    }
+    function qFrame(stamp) {
+      const dt=qLastFrame?Math.min((stamp-qLastFrame)/1000,.042):0;
+      qLastFrame=stamp;
+      if(activeGame==="qdodge"){
+        qAdvance(dt);qDraw();
+        if(qState==="playing"||qState==="finished"||qState==="countdown"){
+          // Update the small HUD frequently; rebuild player cards only when necessary.
+          qUI.time.textContent=qElapsed.toFixed(1);
+          qUI.shots.textContent=qShots;
+          if(qState==="playing"){
+            qUI.survivors.textContent=qAlive().length+"명";
+            qUI.players.querySelectorAll(".q-player-card").forEach((card,i)=>{
+              const p=qPlayers[i];card.classList.toggle("dead",p.hp<=0);
+              card.querySelector(".q-hearts").textContent="♥".repeat(p.hp)+"♡".repeat(3-p.hp);
+              card.querySelector("p").textContent=p.hp>0?"생존 중":`탈락 · ${p.deathTime.toFixed(1)}초 생존`;
+            });
+          }
+        }
+      }
+      requestAnimationFrame(qFrame);
+    }
+    const qControlCodes=new Set([...Q_CONFIGS.flatMap(p=>p.keys),"Space","Enter","KeyR"]);
+    window.addEventListener("keydown", e=>{
+      if(activeGame!=="qdodge" || !qControlCodes.has(e.code))return;
+      if(document.activeElement && ["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName))return;
+      e.preventDefault();
+      if(e.repeat)return;
+      if(e.code==="Space"){qSetPaused();return;}
+      if(e.code==="KeyR"){qReset();return;}
+      if(e.code==="Enter"){qStart();return;}
+      qHeld.add(e.code);
+    });
+    window.addEventListener("keyup",e=>{qHeld.delete(e.code);});
+    window.addEventListener("blur",()=>{if(activeGame==="qdodge"&&(qState==="playing"||qState==="countdown"))qSetPaused();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden&&activeGame==="qdodge"&&(qState==="playing"||qState==="countdown"))qSetPaused();});
+    qUI.count.addEventListener("change",qReset);
+    qUI.difficulty.addEventListener("change",qReset);
+    qUI.start.addEventListener("click",qStart);
+    qUI.pause.addEventListener("click",qSetPaused);
+    qUI.restart.addEventListener("click",qReset);
+    qReset();requestAnimationFrame(qFrame);
+
+
+    // ── GAME 05: MINESWEEPER ──
+    // Zero-dependency, first-click-safe Minesweeper with flood fill, chord, flags, clock and records.
+    const MS_LEVELS = {
+      beginner:     {rows:9,  cols:9,  mines:10, name:"초급"},
+      intermediate: {rows:16, cols:16, mines:40, name:"중급"},
+      expert:       {rows:16, cols:30, mines:99, name:"고급"}
+    };
+    const msUI = {
+      board:document.getElementById("minesBoard"), mask:document.getElementById("minesMask"),
+      difficulty:document.getElementById("minesDifficulty"), status:document.getElementById("minesStatus"),
+      remaining:document.getElementById("minesRemaining"), time:document.getElementById("minesTime"),
+      message:document.getElementById("minesMessage"), pause:document.getElementById("minesPause"),
+      flag:document.getElementById("minesFlagMode"), restart:document.getElementById("minesRestart"),
+      safe:document.getElementById("minesSafeRemaining"),best:document.getElementById("minesBest"),
+      wins:document.getElementById("minesWins"), levelName:document.getElementById("minesLevelName")
+    };
+    let msCells=[], msButtons=[], msConfig=MS_LEVELS.beginner;
+    let msState="ready", msFirst=true, msOpened=0, msFlags=0, msSeconds=0;
+    let msTimer=null, msFlagMode=false, msExploded=-1, msMessage="";
+    let msLongTimer=null, msLongPointer=null, msSuppress=null;
+    let msWins=0;
+    try { msWins=Number(localStorage.getItem("pixelplay_mines_wins"))||0; } catch(_) {}
+
+    const msTimeLabel=secs=>`${String(Math.floor(secs/60)).padStart(2,"0")}:${String(secs%60).padStart(2,"0")}`;
+    const msAdjacent=index=>{
+      const r=Math.floor(index/msConfig.cols), c=index%msConfig.cols, adjacent=[];
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        if(dx===0&&dy===0)continue;
+        const nr=r+dy,nc=c+dx;
+        if(nr>=0&&nr<msConfig.rows&&nc>=0&&nc<msConfig.cols) adjacent.push(nr*msConfig.cols+nc);
+      }
+      return adjacent;
+    };
+    function msStopClock(){if(msTimer!==null){clearInterval(msTimer);msTimer=null;}}
+    function msStartClock(){
+      if(msTimer!==null||msState!=="playing"||activeGame!=="mines")return;
+      msTimer=setInterval(()=>{
+        if(msState!=="playing"||activeGame!=="mines")return;
+        msSeconds++;
+        msUI.time.textContent=msTimeLabel(msSeconds);
+      },1000);
+    }
+    function msSwitchVisibility(visible){
+      if(!visible)msStopClock();
+      else if(msState==="playing")msStartClock();
+    }
+    function msBestTime(){
+      try {const saved=localStorage.getItem("pixelplay_mines_best_"+msUI.difficulty.value);return saved===null?null:Math.max(0,Number(saved));}
+      catch(_){return null;}
+    }
+    function msUpdateStats(){
+      msUI.remaining.textContent=String(msConfig.mines-msFlags).padStart(3,"0");
+      msUI.time.textContent=msTimeLabel(msSeconds);
+      msUI.safe.textContent=msConfig.rows*msConfig.cols-msConfig.mines-msOpened;
+      msUI.wins.textContent=msWins;
+      msUI.levelName.textContent=msConfig.name;
+      const best=msBestTime();msUI.best.textContent=best===null?"—":msTimeLabel(best);
+      msUI.flag.setAttribute("aria-pressed",String(msFlagMode));
+      msUI.flag.textContent=msFlagMode?"🚩 깃발 모드 ON":"🚩 깃발 모드 OFF";
+      msUI.pause.textContent=msState==="paused"?"▶ 계속하기":"⏸ 일시정지";
+      msUI.pause.disabled=msState==="won"||msState==="lost";
+      msUI.mask.hidden=msState!=="paused";
+      msUI.status.textContent=({ready:"시작 대기",playing:"탐색 중",paused:"일시정지",won:"승리!",lost:"게임 오버"})[msState];
+      msUI.message.textContent=msMessage;
+      msUI.message.className="mine-message"+(msState==="won"?" win":msState==="lost"?" lost":"");
+    }
+    function msPaintCell(index){
+      const cell=msCells[index], btn=msButtons[index];
+      if(!btn)return;
+      const showingMine=msState==="lost"&&cell.mine&&!cell.flagged;
+      const wrongFlag=msState==="lost"&&cell.flagged&&!cell.mine;
+      const displayOpen=cell.open;
+      btn.className="mine-cell";
+      if(displayOpen)btn.classList.add("open");
+      if(cell.flagged&&!wrongFlag)btn.classList.add("flagged");
+      if(displayOpen&&cell.adj)btn.classList.add("n"+cell.adj);
+      if(showingMine)btn.classList.add(index===msExploded?"mine-explode":"mine-show");
+      if(wrongFlag)btn.classList.add("mine-wrong");
+      btn.textContent=wrongFlag?"✕":cell.flagged?"🚩":displayOpen?(cell.mine?"💥":cell.adj?String(cell.adj):""):showingMine?"💣":"";
+      btn.setAttribute("aria-label",`행 ${Math.floor(index/msConfig.cols)+1}, 열 ${index%msConfig.cols+1}: `+
+        (wrongFlag?"잘못된 깃발":cell.flagged?"깃발 표시":showingMine?"지뢰":displayOpen?(cell.adj?`주변 지뢰 ${cell.adj}개`:"주변 지뢰 0개"):"닫힌 칸"));
+      btn.setAttribute("aria-pressed",String(cell.flagged));
+    }
+    function msPaint(){for(let i=0;i<msCells.length;i++)msPaintCell(i);msUpdateStats();}
+    function msNewGame(){
+      msStopClock();msStopLongPress();
+      msConfig=MS_LEVELS[msUI.difficulty.value];
+      msCells=Array.from({length:msConfig.rows*msConfig.cols},()=>({mine:false,adj:0,open:false,flagged:false}));
+      msFirst=true;msOpened=0;msFlags=0;msSeconds=0;msExploded=-1;
+      msState="ready";msFlagMode=false;msSuppress=null;
+      msMessage="첫 칸을 클릭하세요! 첫 클릭한 칸과 주변 8칸은 지뢰 없이 시작합니다.";
+      msUI.board.style.setProperty("--ms-cols",String(msConfig.cols));
+      msUI.board.setAttribute("aria-label",`${msConfig.name} 지뢰찾기, ${msConfig.rows}행 ${msConfig.cols}열, 지뢰 ${msConfig.mines}개`);
+      msUI.board.replaceChildren();msButtons=[];
+      const fragment=document.createDocumentFragment();
+      for(let i=0;i<msCells.length;i++){
+        const b=document.createElement("button");b.type="button";b.className="mine-cell";b.dataset.index=String(i);
+        fragment.appendChild(b);msButtons.push(b);
+      }
+      msUI.board.appendChild(fragment);
+      msPaint();
+    }
+    function msPlaceMines(firstIndex){
+      const safeSet=new Set([firstIndex,...msAdjacent(firstIndex)]);
+      const possibilities=[];
+      for(let i=0;i<msCells.length;i++)if(!safeSet.has(i))possibilities.push(i);
+      // Built-in difficulties have enough cells to preserve a 3×3 safe first-click opening.
+      for(let k=0;k<msConfig.mines;k++){
+        const j=k+Math.floor(Math.random()*(possibilities.length-k));
+        [possibilities[k],possibilities[j]]=[possibilities[j],possibilities[k]];
+        msCells[possibilities[k]].mine=true;
+      }
+      for(let i=0;i<msCells.length;i++)if(!msCells[i].mine)
+        msCells[i].adj=msAdjacent(i).reduce((n,adj)=>n+Number(msCells[adj].mine),0);
+    }
+    function msLose(index){
+      msState="lost";msExploded=index;
+      msStopClock();msMessage="💥 지뢰를 밟았어요! 폭탄 위치와 잘못 꽂은 깃발을 확인하고 새 게임을 시작하세요.";
+    }
+    function msWinIfComplete(){
+      if(msOpened!==msCells.length-msConfig.mines||msState==="lost")return;
+      msState="won";msStopClock();
+      // Reveal the correct mine locations as flags at the end of a successful game.
+      for(const cell of msCells)if(cell.mine)cell.flagged=true;
+      msFlags=msConfig.mines;
+      msWins++;
+      try {localStorage.setItem("pixelplay_mines_wins",String(msWins));} catch(_) {}
+      const best=msBestTime();
+      if(best===null||msSeconds<best){
+        try {localStorage.setItem("pixelplay_mines_best_"+msUI.difficulty.value,String(msSeconds));} catch(_) {}
+      }
+      msMessage=`🎉 성공! 지뢰가 없는 칸을 모두 찾았습니다. 기록: ${msTimeLabel(msSeconds)} · ${msConfig.name} 난이도`;
+    }
+    function msOpenFrom(startIndices){
+      const queue=[...startIndices],seen=new Set();
+      for(let k=0;k<queue.length;k++){
+        const index=queue[k];if(seen.has(index))continue;seen.add(index);
+        const cell=msCells[index];
+        if(cell.open||cell.flagged)continue;
+        if(cell.mine){msLose(index);return;}
+        cell.open=true;msOpened++;
+        if(cell.adj===0)for(const n of msAdjacent(index)){
+          if(!msCells[n].open&&!msCells[n].flagged)queue.push(n);
+        }
+      }
+      msWinIfComplete();
+    }
+    function msReveal(index){
+      if(!["ready","playing"].includes(msState)||index<0||index>=msCells.length)return;
+      const cell=msCells[index];
+      if(cell.flagged)return;
+      if(cell.open){
+        if(cell.adj>0){
+          const around=msAdjacent(index);
+          if(around.filter(i=>msCells[i].flagged).length===cell.adj){
+            msOpenFrom(around.filter(i=>!msCells[i].flagged&&!msCells[i].open));
+            if(msState==="playing")msMessage="주변 칸을 한꺼번에 열었습니다. 표시한 깃발이 맞는지 확인하세요.";
+          }else{msMessage=`이 숫자 주변에는 지뢰가 ${cell.adj}개 있습니다. 깃발 개수를 맞추면 주변 칸이 열립니다.`;}
+        }
+        msPaint();return;
+      }
+      if(msFirst){msPlaceMines(index);msFirst=false;msState="playing";msStartClock();}
+      msOpenFrom([index]);
+      if(msState==="playing")msMessage="숫자를 참고해 안전한 칸을 찾아보세요. 지뢰는 깃발로 표시할 수 있습니다.";
+      msPaint();
+    }
+    function msToggleFlag(index){
+      if(!["ready","playing"].includes(msState)||index<0||index>=msCells.length||msCells[index].open)return;
+      const cell=msCells[index];
+      cell.flagged=!cell.flagged;msFlags+=cell.flagged?1:-1;
+      msMessage=cell.flagged?"🚩 깃발 표시! 이 칸은 열리지 않습니다.":"깃발을 해제했습니다. 이제 칸을 열 수 있습니다.";
+      msPaint();
+    }
+    function msPause(){
+      if(msState==="playing"){msState="paused";msStopClock();msMessage="일시정지 중입니다. 계속하기를 누르면 다시 시작합니다.";}
+      else if(msState==="paused"){msState="playing";msStartClock();msMessage="게임을 재개했습니다. 지뢰를 피해 안전한 칸을 열어보세요.";}
+      msUpdateStats();
+    }
+    function msStopLongPress(){
+      if(msLongTimer!==null){clearTimeout(msLongTimer);msLongTimer=null;}
+      msLongPointer=null;
+    }
+    function msEventIndex(target){const button=target.closest?.(".mine-cell");return button?Number(button.dataset.index):-1;}
+    msUI.board.addEventListener("click",event=>{
+      const index=msEventIndex(event.target);if(index<0)return;
+      if(msSuppress&&msSuppress.index===index&&Date.now()-msSuppress.time<1200){msSuppress=null;event.preventDefault();return;}
+      msSuppress=null;
+      if(msFlagMode||event.shiftKey)msToggleFlag(index);else msReveal(index);
+    });
+    msUI.board.addEventListener("contextmenu",event=>{
+      const index=msEventIndex(event.target);if(index<0)return;
+      event.preventDefault();
+      // Browsers may fire contextmenu before or after a touch long-press timer.
+      // Consume the second event so it never removes a flag accidentally.
+      msStopLongPress();
+      if(msSuppress&&msSuppress.index===index&&Date.now()-msSuppress.time<1200)return;
+      msSuppress={index,time:Date.now()};msToggleFlag(index);
+    });
+    msUI.board.addEventListener("pointerdown",event=>{
+      if(event.pointerType!=="touch"&&event.pointerType!=="pen")return;
+      const index=msEventIndex(event.target);if(index<0)return;
+      msStopLongPress();msLongPointer=event.pointerId;
+      const originX=event.clientX,originY=event.clientY;
+      msLongTimer=setTimeout(()=>{
+        msLongTimer=null;
+        msSuppress={index,time:Date.now()};
+        msToggleFlag(index);
+        if(navigator.vibrate)navigator.vibrate(25);
+      },520);
+      // Save origin on the board for scroll-cancel checks.
+      msUI.board.dataset.touchOriginX=String(originX);msUI.board.dataset.touchOriginY=String(originY);
+    });
+    msUI.board.addEventListener("pointermove",event=>{
+      if(msLongPointer!==event.pointerId||msLongTimer===null)return;
+      const dx=event.clientX-Number(msUI.board.dataset.touchOriginX),dy=event.clientY-Number(msUI.board.dataset.touchOriginY);
+      if(Math.hypot(dx,dy)>12)msStopLongPress();
+    });
+    for(const type of ["pointerup","pointercancel","pointerleave"])msUI.board.addEventListener(type,msStopLongPress);
+    msUI.flag.addEventListener("click",()=>{msFlagMode=!msFlagMode;msUpdateStats();});
+    msUI.restart.addEventListener("click",msNewGame);
+    msUI.difficulty.addEventListener("change",msNewGame);
+    msUI.pause.addEventListener("click",msPause);
+    window.addEventListener("keydown",event=>{
+      if(activeGame!=="mines"||event.repeat)return;
+      if(document.activeElement&&["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName))return;
+      if(event.code==="KeyR"){event.preventDefault();msNewGame();}
+      if(event.code==="KeyF"){event.preventDefault();msFlagMode=!msFlagMode;msUpdateStats();}
+      if(event.code==="Escape"){event.preventDefault();msPause();}
+    });
+    window.addEventListener("blur",()=>{if(activeGame==="mines"&&msState==="playing")msPause();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden&&activeGame==="mines"&&msState==="playing")msPause();});
+    msNewGame();
+    // ── GAME 06: SPOT THE DIFFERENCE ──
+    // All artwork is original SVG embedded in this file. Identical common artwork
+    // is shared by both pictures; only the selected differences vary.
+    const SP_CONFIGS={easy:{count:3,seconds:150,misses:5,hints:3,label:"쉬움",bonus:1},normal:{count:5,seconds:120,misses:4,hints:2,label:"보통",bonus:2},hard:{count:7,seconds:90,misses:3,hints:1,label:"어려움",bonus:3}};
+    const spUI={
+      panel:document.getElementById("spotPanel"),left:document.getElementById("spotLeft"),right:document.getElementById("spotRight"),
+      difficulty:document.getElementById("spotDifficulty"),status:document.getElementById("spotStatus"),
+      stageTitle:document.getElementById("spotStageTitle"),found:document.getElementById("spotFound"),
+      time:document.getElementById("spotTime"),mistakes:document.getElementById("spotMistakes"),
+      score:document.getElementById("spotScore"),best:document.getElementById("spotBest"),
+      message:document.getElementById("spotMessage"),start:document.getElementById("spotStart"),
+      hint:document.getElementById("spotHint"),pause:document.getElementById("spotPause"),restart:document.getElementById("spotRestart")
+    };
+    const spC=(x,y,r,color,more="")=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" ${more}/>`;
+    const spR=(x,y,w,h,color,rx=0)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${color}"/>`;
+    const spP=(d,color,more="")=>`<path d="${d}" fill="${color}" ${more}/>`;
+    const spLine=(x1,y1,x2,y2,color,width=3)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="round" fill="none"/>`;
+    const spCloud=(x,y,color="#fff5e9")=>spC(x,y+5,21,color)+spC(x+20,y-4,27,color)+spC(x+47,y+7,22,color)+spR(x-5,y+6,70,17,color,9);
+    const spFlower=(x,y,petal="#ff7aa9")=>{
+      let a="";for(let i=0;i<5;i++){const q=i*Math.PI*2/5;a+=spC(x+10*Math.cos(q),y+10*Math.sin(q),7,petal);}
+      return spLine(x,y+8,x,y+24,"#4e9b69",3)+a+spC(x,y,6,"#ffe47b");
+    };
+    const spStar=(x,y,color="#ffdb72",radius=20)=>{
+      let pts="";for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r=k%2?radius*.45:radius;pts+=`${x+r*Math.cos(a)},${y+r*Math.sin(a)} `;}
+      return `<polygon points="${pts}" fill="${color}" stroke="#ffffff90" stroke-width="1.5"/>`;
+    };
+    function spBeach(){
+      const bg=`${spR(0,0,600,400,"#8cd7f4")}
+        ${spC(480,122,145,"#a9e5fa88")}${spP("M0 217 Q88 199 159 220 T310 216 T478 220 T600 209V314H0Z","#3babbc")}
+        ${spP("M0 269 Q100 250 200 269 T390 266 T600 258V340H0Z","#68c9c3")}
+        ${spP("M0 303Q125 287 237 305T470 304T600 294V400H0Z","#f7d18a")}
+        ${spP("M0 351Q120 341 235 350T420 350T600 342V400H0Z","#f4c17f")}
+        ${spCloud(9,70,"#e2f9fa")}${spCloud(365,30,"#f0fcff")}
+        ${spR(74,161,53,118,"#fff5df",4)}${spP("M74 201L127 201L119 215L81 215Z","#ffb08e")}
+        ${spR(89,221,21,28,"#96d5e1",4)}${spR(84,263,33,16,"#83aec2",2)}
+        ${spP("M286 247L380 247L363 264L305 264Z","#a04d62")}${spLine(333,248,333,168,"#735e66",4)}
+        ${spLine(464,267,464,338,"#f7f0d7",5)}${spR(450,334,29,8,"#ab8259",4)}
+        ${spP("M0 319Q50 307 102 318M201 302Q238 291 283 302M383 318Q420 306 461 319","none",'stroke="#fff5df" stroke-width="4" opacity=".6"')}
+        ${spC(550,354,4,"#f8e7c9")}${spC(574,341,3,"#f8e7c9")}${spC(234,362,4,"#fff4d8")}
+        ${spLine(17,365,22,360,"#e3ac77",3)}${spLine(41,376,51,372,"#e3ac77",3)}${spP("M526 288q16 -17 31 0","none",'stroke="#e6fcff" stroke-width="3"')}`;
+      return {name:"바닷가 오후",bg,diffs:[
+        {x:520,y:72,r:29,a:spC(520,72,25,"#ffdd65")+spC(512,69,2,"#7e7647")+spC(528,69,2,"#7e7647")+spP("M513 81Q520 88 527 81","none",'stroke="#7e7647" stroke-width="2"'),b:spC(520,72,25,"#ff94ac")+spStar(520,72,"#ffda72",12)},
+        {x:226,y:76,r:38,a:spCloud(196,77,"#fff7ef"),b:spCloud(196,77,"#d6b4f6")},
+        {x:101,y:146,r:31,a:spP("M67 162L101 122L134 162Z","#e95d6f")+spC(101,150,6,"#ffeba3"),b:spP("M67 162L101 122L134 162Z","#4ca5d3")+spC(101,150,6,"#ffeba3")},
+        {x:352,y:204,r:37,a:spP("M337 173L337 237L381 235Z","#ffe081")+spP("M329 190L329 239L298 240Z","#fff9e8"),b:spP("M337 173L337 237L381 235Z","#c89aff")+spP("M329 190L329 239L298 240Z","#fff9e8")},
+        {x:464,y:250,r:36,a:spP("M401 267Q460 182 526 267Z","#f87575")+spP("M449 267L464 212L480 267Z","#fff3cf"),b:spP("M401 267Q460 182 526 267Z","#9175ed")+spP("M449 267L464 212L480 267Z","#fff3cf")},
+        {x:161,y:342,r:28,a:spC(161,342,24,"#fff5df")+spP("M161 318A24 24 0 0 1 182 353L161 343Z","#ff7e87"),b:spC(161,342,24,"#fff5df")+spP("M161 318A24 24 0 0 1 182 353L161 343Z","#5b89f5")},
+        {x:313,y:347,r:29,a:spC(313,349,17,"#ec626c")+spC(306,347,3,"#2b3447")+spC(320,347,3,"#2b3447")+spLine(289,350,297,355,"#e76266",5)+spLine(329,355,338,350,"#e76266",5),b:spC(313,349,17,"#667fd5")+spC(306,347,3,"#2b3447")+spC(320,347,3,"#2b3447")+spLine(289,350,297,355,"#667fd5",5)+spLine(329,355,338,350,"#667fd5",5)}
+      ]};
+    }
+    function spForest(){
+      const bg=`${spR(0,0,600,400,"#b5d9b8")}${spC(300,80,125,"#e6e7a655")}
+        ${spP("M0 215L117 89L237 219L352 112L493 224L600 116V400H0Z","#7cb7a6")}
+        ${spP("M0 255Q80 195 170 233T360 231T600 218V400H0Z","#4a9a85")}
+        ${spP("M0 293Q140 260 260 292T600 276V400H0Z","#357d69")}
+        ${spP("M207 321L270 216L330 322Z","#f5a15b")}${spP("M270 216L330 322L273 322Z","#ee7660")}
+        ${spLine(270,212,270,186,"#fff5d8",3)}${spLine(270,188,296,188,"#fff5d8",2)}
+        ${spR(418,206,11,81,"#675848",3)}${spLine(409,207,437,207,"#baa46e",4)}
+        ${spC(60,283,29,"#245c51")}${spC(82,248,37,"#2b7559")}${spC(36,242,34,"#367e64")}${spR(55,275,19,85,"#745b49",3)}
+        ${spC(563,270,39,"#2a7257")}${spC(535,243,32,"#287159")}${spR(551,287,18,64,"#745b49",3)}
+        ${spR(308,351,95,10,"#644b41",5)}${spP("M0 363Q120 347 226 360T460 356T600 351V400H0Z","#306c58")}
+        ${spFlower(430,367,"#ffcc86")}${spFlower(472,365,"#f48ab1")}${spFlower(227,370,"#fba179")}
+        ${spC(22,24,4,"#fff8cc")}${spC(561,92,3,"#e7f5b6")}${spP("M144 288q15 -12 31 0","none",'stroke="#e2e8a9" stroke-width="3"')}`;
+      return {name:"숲속 캠핑",bg,diffs:[
+        {x:491,y:70,r:30,a:spC(491,70,26,"#ffe18d")+spC(491,70,16,"#ffba73"),b:spC(491,70,26,"#d2b5fa")+spC(491,70,16,"#ab8ddd")},
+        {x:179,y:87,r:32,a:spP("M148 91q15 -19 30 1q14 -18 30 -3","none",'stroke="#3b5265" stroke-width="5" stroke-linecap="round"'),b:spP("M148 91q15 -19 30 1q14 -18 30 -3","none",'stroke="#f3f7eb" stroke-width="5" stroke-linecap="round"')},
+        {x:98,y:183,r:27,a:spC(100,182,14,"#e66b61")+spP("M101 171q-9 -15 4 -18","none",'stroke="#446b4a" stroke-width="3"'),b:spC(100,182,14,"#f5c94b")+spP("M101 171q-9 -15 4 -18","none",'stroke="#446b4a" stroke-width="3"')},
+        {x:274,y:284,r:30,a:spP("M260 325L275 254L292 325Z","#845466")+spC(275,284,4,"#ffcfb0"),b:spP("M260 325L275 254L292 325Z","#6eb7aa")+spC(275,284,4,"#ffcfb0")},
+        {x:424,y:242,r:30,a:spR(413,225,22,35,"#ffdc6c",6)+spLine(417,225,431,225,"#584c4e",4)+spC(424,240,6,"#fffacc"),b:spR(413,225,22,35,"#8fcffa",6)+spLine(417,225,431,225,"#584c4e",4)+spC(424,240,6,"#fffacc")},
+        {x:356,y:333,r:29,a:spP("M339 343Q325 325 352 312Q349 326 366 317Q386 338 368 346Z","#ffb95c")+spP("M350 343Q345 326 357 322Q369 335 363 344Z","#fff1a3"),b:spP("M339 343Q325 325 352 312Q349 326 366 317Q386 338 368 346Z","#a88eea")+spP("M350 343Q345 326 357 322Q369 335 363 344Z","#e3d7fc")},
+        {x:103,y:338,r:25,a:spR(98,336,10,18,"#f9ead1",3)+spP("M82 339Q103 303 124 339Z","#e75e70")+spC(95,329,4,"#fff3dc")+spC(110,329,4,"#fff3dc"),b:spR(98,336,10,18,"#f9ead1",3)+spP("M82 339Q103 303 124 339Z","#a580d8")+spC(95,329,4,"#fff3dc")+spC(110,329,4,"#fff3dc")}
+      ]};
+    }
+    function spSpace(){
+      let dust="";for(let i=0;i<38;i++){const x=(i*89+37)%600,y=(i*47+19)%355;dust+=spC(x,y,i%4===0?2.5:1.3,i%3===0?"#a6c9ef":"#eff6ff");}
+      const bg=`${spR(0,0,600,400,"#111c48")}${spC(295,35,270,"#24356b44")}${dust}
+        ${spP("M0 355Q170 318 300 360T600 331V400H0Z","#5a648d")}
+        ${spP("M0 379Q140 364 260 382T600 373V400H0Z","#747ba0")}
+        ${spP("M401 175L450 76L498 175L477 213L423 213Z","#e0e9f2")}
+        ${spP("M402 167L499 167L476 206L425 206Z","#899dbc")}
+        ${spP("M421 213L406 244L445 213Z","#fc9781")}${spP("M454 213L493 245L478 213Z","#fc9781")}
+        ${spC(451,155,17,"#4f89b3")}${spC(451,155,12,"#8ce1de")}
+        ${spR(178,236,81,11,"#a2bcde",5)}${spR(209,209,18,49,"#c7d7eb",4)}
+        ${spR(178,202,29,30,"#77a2bf",3)}${spR(236,197,27,32,"#77a2bf",3)}
+        ${spLine(221,242,221,280,"#a3b9dd",5)}
+        ${spC(377,305,30,"#f1f5e9")}${spR(349,321,56,42,"#dee5eb",12)}
+        ${spLine(356,345,342,369,"#dbe9ef",7)}${spLine(397,345,411,369,"#dbe9ef",7)}
+        ${spC(526,317,44,"#afb9d2")}${spC(542,323,35,"#a6b4cf")}
+        ${spP("M0 260Q49 246 68 269","none",'stroke="#6d89c5" stroke-width="2"')}`;
+      return {name:"우주 탐험",bg,diffs:[
+        {x:111,y:93,r:38,a:spC(111,93,36,"#67c5d9")+spP("M82 87Q114 62 142 90Q121 114 87 111Z","#467cce"),b:spC(111,93,36,"#de8fd1")+spP("M82 87Q114 62 142 90Q121 114 87 111Z","#9954a7")},
+        {x:291,y:73,r:29,a:spStar(291,73,"#ffe085",26),b:spStar(291,73,"#7be9f3",26)},
+        {x:450,y:93,r:32,a:spP("M426 131L450 72L476 131Z","#ef667d"),b:spP("M426 131L450 72L476 131Z","#85d8c5")},
+        {x:220,y:184,r:28,a:spLine(220,208,220,173,"#d6e9ff",4)+spC(220,169,13,"#ffc869"),b:spLine(220,208,220,173,"#d6e9ff",4)+spC(220,169,13,"#a18ffa")},
+        {x:119,y:329,r:29,a:spC(119,330,23,"#9fdf8a")+spC(112,326,4,"#28394d")+spC(126,326,4,"#28394d")+spP("M112 340q7 6 14 0","none",'stroke="#38534e" stroke-width="2"'),b:spC(119,330,23,"#f3a0c1")+spC(112,326,4,"#28394d")+spC(126,326,4,"#28394d")+spP("M112 340q7 6 14 0","none",'stroke="#38534e" stroke-width="2"')},
+        {x:378,y:303,r:29,a:spC(378,302,20,"#70c4d5")+spP("M365 299q13 -13 26 0","none",'stroke="#c7f9ff" stroke-width="4"'),b:spC(378,302,20,"#e5af6e")+spP("M365 299q13 -13 26 0","none",'stroke="#fff3be" stroke-width="4"')},
+        {x:520,y:318,r:26,a:spC(522,317,17,"#7683a8")+spC(517,313,6,"#666e91"),b:spC(522,317,17,"#d38fa3")+spC(517,313,6,"#b57d9f")}
+      ]};
+    }
+    function spSnow(){
+      let flakes="";for(let i=0;i<25;i++){flakes+=spC((i*71+29)%600,(i*53+22)%310,1.5+(i%3),"#fff9efaa");}
+      const bg=`${spR(0,0,600,400,"#abc4e2")}${spC(280,90,185,"#dce3ed3e")}${flakes}
+        ${spP("M0 276Q135 239 273 267T600 244V400H0Z","#eff7ff")}
+        ${spP("M0 327Q150 296 285 330T600 312V400H0Z","#c6e1ef")}
+        ${spR(82,177,145,120,"#d69083",6)}${spP("M64 184L153 101L245 184Z","#f4ecf0")}
+        ${spP("M72 184L153 115L234 184Z","#805c83")}
+        ${spR(185,108,36,43,"#9b677c",3)}
+        ${spR(146,227,34,70,"#78597a",2)}${spC(174,263,3,"#f4d9a9")}
+        ${spR(97,200,31,40,"#f9d9bc",3)}${spR(161,200,32,40,"#f9d9bc",3)}
+        ${spP("M0 314Q57 296 112 314T270 313","none",'stroke="#fbfeff" stroke-width="7"')}
+        ${spP("M388 298L433 96L475 298Z","#296e77")}
+        ${spP("M394 266L433 121L470 266Z","#448b81")}
+        ${spP("M400 237L433 133L464 237Z","#5c9e8a")}
+        ${spR(429,294,9,36,"#846d6a",2)}
+        ${spC(289,328,31,"#faffff")}${spC(289,287,23,"#faffff")}
+        ${spC(280,282,3,"#334968")}${spC(297,282,3,"#334968")}${spP("M288 291L308 296L288 298Z","#f6a260")}
+        ${spLine(264,320,245,312,"#745f5a",3)}${spLine(312,319,330,313,"#745f5a",3)}
+        ${spR(500,328,37,36,"#e9818c",4)}${spR(65,325,28,38,"#b5becd",4)}${spLine(79,327,79,307,"#8295a9",4)}`;
+      return {name:"눈 내리는 마을",bg,diffs:[
+        {x:514,y:69,r:29,a:spC(514,69,26,"#fff2af")+spC(525,59,21,"#abc4e2"),b:spC(514,69,26,"#ceb9ff")+spC(525,59,21,"#abc4e2")},
+        {x:207,y:88,r:31,a:spC(205,102,13,"#e9e5e7")+spC(209,83,16,"#f5f0f0")+spC(200,67,12,"#fff9fa"),b:spC(205,102,13,"#add8ef")+spC(209,83,16,"#add8ef")+spC(200,67,12,"#add8ef")},
+        {x:113,y:218,r:29,a:spR(99,203,29,35,"#ffe099",2)+spLine(113,204,113,235,"#765b7c",3),b:spR(99,203,29,35,"#82a1d9",2)+spLine(113,204,113,235,"#765b7c",3)},
+        {x:433,y:113,r:29,a:spStar(433,115,"#f7df6f",22),b:spStar(433,115,"#f28aaa",22)},
+        {x:289,y:299,r:28,a:spP("M267 299Q289 317 311 299L303 310L275 311Z","#dc6c79"),b:spP("M267 299Q289 317 311 299L303 310L275 311Z","#6c9bd1")},
+        {x:518,y:346,r:26,a:spR(515,329,7,34,"#ffe18b",1)+spP("M500 338L518 331L535 338L518 346Z","#ffdc86"),b:spR(515,329,7,34,"#8de5d2",1)+spP("M500 338L518 331L535 338L518 346Z","#81decf")},
+        {x:80,y:338,r:26,a:spR(64,326,31,25,"#eb677b",4)+spR(79,340,6,22,"#e0e0ef",1),b:spR(64,326,31,25,"#5a93cb",4)+spR(79,340,6,22,"#e0e0ef",1)}
+      ]};
+    }
+    function spMarket(){
+      const bg=`${spR(0,0,600,400,"#b5e3d6")}${spP("M0 250Q110 217 205 246T405 240T600 221V400H0Z","#91c9a2")}
+        ${spP("M0 310Q170 288 305 313T600 298V400H0Z","#7cb490")}
+        ${spP("M236 400L297 260L365 400Z","#eec9a2")}
+        ${spR(369,170,178,137,"#fff2db",8)}${spP("M355 175L459 119L559 175Z","#8c7f99")}
+        ${spR(378,202,161,32,"#ffedcf",5)}${spR(398,243,119,62,"#d0b69c",4)}
+        ${spR(451,262,42,43,"#5b7b89",5)}${spLine(476,260,476,305,"#e5f7eb",3)}
+        ${spR(95,162,18,141,"#80685c",4)}${spC(100,158,67,"#4f9f76")}${spC(57,168,40,"#67b68a")}${spC(150,184,42,"#69ae82")}
+        ${spR(304,220,11,90,"#7d6d6c",2)}${spP("M286 232L332 232L323 259L295 259Z","#f5eece")}
+        ${spC(529,354,28,"#f5e8da")}${spP("M506 339L504 319L519 331L532 315L544 339Z","#eee1d3")}
+        ${spFlower(55,345,"#f5a4aa")}${spFlower(231,345,"#d1a0e8")}${spFlower(566,359,"#f4bc8e")}
+        ${spC(270,60,30,"#ffe2a2")}${spCloud(348,54,"#fffef1")}
+        ${spP("M35 310q27 -15 53 0M164 296q24 -10 47 0","none",'stroke="#d8f0b6" stroke-width="4"')}`;
+      return {name:"봄날의 마켓",bg,diffs:[
+        {x:126,y:82,r:34,a:spP("M126 52L149 80L126 112L103 80Z","#e98483")+spLine(126,111,135,142,"#f8efdf",2),b:spP("M126 52L149 80L126 112L103 80Z","#9287db")+spLine(126,111,135,142,"#f8efdf",2)},
+        {x:485,y:62,r:32,a:spCloud(466,60,"#fff8eb"),b:spCloud(466,60,"#dbc5f0")},
+        {x:158,y:189,r:25,a:spC(157,189,15,"#e7656d")+spP("M157 175q-3 -8 5 -11","none",'stroke="#42674b" stroke-width="3"'),b:spC(157,189,15,"#e3d45a")+spP("M157 175q-3 -8 5 -11","none",'stroke="#42674b" stroke-width="3"')},
+        {x:309,y:274,r:26,a:spR(295,264,30,28,"#7ad4d5",4)+spP("M325 268q20 0 1 15","none",'stroke="#7ad4d5" stroke-width="6"'),b:spR(295,264,30,28,"#f5a0b9",4)+spP("M325 268q20 0 1 15","none",'stroke="#f5a0b9" stroke-width="6"')},
+        {x:454,y:204,r:37,a:spP("M370 191H545L534 217H381Z","#eb7d82")+spP("M389 191H411L418 217H394ZM433 191H456L458 217H436ZM480 191H501L501 217H478Z","#fff5e5"),b:spP("M370 191H545L534 217H381Z","#70c4d4")+spP("M389 191H411L418 217H394ZM433 191H456L458 217H436ZM480 191H501L501 217H478Z","#fff5e5")},
+        {x:103,y:349,r:28,a:spFlower(103,344,"#ed86b8"),b:spFlower(103,344,"#f3c75e")},
+        {x:529,y:352,r:27,a:spC(526,352,4,"#584b50")+spP("M535 354q18 4 16 -19","none",'stroke="#dfae85" stroke-width="7"'),b:spC(526,352,4,"#584b50")+spP("M535 354q18 4 16 -19","none",'stroke="#686579" stroke-width="7"')}
+      ]};
+    }
+    const SP_SCENES=[spBeach(),spForest(),spSpace(),spSnow(),spMarket()];
+    let spState="ready",spStage=1,spSceneIndex=0,spActive=[],spFound=new Set(),spScore=0,spMistakes=0,spHints=0,
+      spRemaining=0,spDeadline=0,spTimer=null,spHintIndex=-1,spHintTimer=null,spOrder=[],spLastMisclick=0;
+    function spConf(){return SP_CONFIGS[spUI.difficulty.value];}
+    function spShuffle(input){const a=[...input];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function spTimeString(s){const n=Math.max(0,Math.ceil(s));return `${String(Math.floor(n/60)).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;}
+    function spBest(){try{return Number(localStorage.getItem("pixelplay_spot_best_"+spUI.difficulty.value))||0;}catch(_){return 0;}}
+    function spSaveBest(){if(spScore<=spBest())return;try{localStorage.setItem("pixelplay_spot_best_"+spUI.difficulty.value,String(spScore));}catch(_){}}
+    function spSetMessage(msg,kind=""){spUI.message.textContent=msg;spUI.message.className="spot-message"+(kind?" "+kind:"");}
+    function spCancelHint(){clearTimeout(spHintTimer);spHintTimer=null;spHintIndex=-1;}
+    function spStopTimer(){if(spTimer!==null){clearInterval(spTimer);spTimer=null;}}
+    function spReset(){
+      spStopTimer();spCancelHint();spState="ready";spStage=1;spScore=0;spHints=spConf().hints;
+      spOrder=spShuffle(SP_SCENES.map((_,i)=>i));spMakeStage();
+      spSetMessage("▶ 게임 시작을 누르면 시간이 흐르기 시작합니다. 양쪽 그림에서 다른 부분을 찾아보세요!");
+    }
+    function spMakeStage(){
+      spState="ready";spCancelHint();spStopTimer();
+      if(spStage>1&&(spStage-1)%SP_SCENES.length===0){
+        const previous=spSceneIndex;
+        do{spOrder=spShuffle(SP_SCENES.map((_,i)=>i));}while(spOrder[0]===previous);
+      }
+      spSceneIndex=spOrder[(spStage-1)%spOrder.length];
+      spActive=spShuffle([0,1,2,3,4,5,6]).slice(0,spConf().count);spFound=new Set();spMistakes=0;
+      spRemaining=spConf().seconds;spHints=spConf().hints;spDraw();spUpdate();
+    }
+    function spArtwork(right){
+      const scene=SP_SCENES[spSceneIndex];
+      const diffs=scene.diffs.map((d,i)=>spActive.includes(i)&&right?d.b:d.a).join("");
+      const found=spActive.filter(i=>spFound.has(i)).map(i=>{
+        const d=scene.diffs[i];return `<circle class="spot-found-ring" cx="${d.x}" cy="${d.y}" r="${d.r+4}"/>`+
+          `<text class="spot-found-tick" x="${d.x}" y="${d.y+8}" text-anchor="middle">✓</text>`;
+      }).join("");
+      const hint=spHintIndex>=0&&right?(()=>{const d=scene.diffs[spHintIndex];return `<circle class="spot-hint-ring" cx="${d.x}" cy="${d.y}" r="${d.r+6}"/>`;})():"";
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${scene.bg}${diffs}${found}${hint}</svg>`;
+    }
+    function spDraw(){spUI.left.innerHTML=spArtwork(false);spUI.right.innerHTML=spArtwork(true);spUI.left.classList.toggle("spot-locked",spState==="paused");spUI.right.classList.toggle("spot-locked",spState==="paused");}
+    function spUpdate(){
+      const c=spConf();spUI.stageTitle.textContent=`STAGE ${spStage} · ${SP_SCENES[spSceneIndex].name}`;
+      spUI.found.textContent=`${spFound.size} / ${spActive.length}`;spUI.mistakes.textContent=`${spMistakes} / ${c.misses}`;
+      spUI.time.textContent=spTimeString(spRemaining);spUI.time.classList.toggle("danger",spRemaining<=15&&spState==="playing");
+      spUI.score.textContent=spScore.toLocaleString();spUI.best.textContent=Math.max(spBest(),spScore).toLocaleString();
+      spUI.status.textContent=({ready:"시작 대기",playing:"플레이 중",paused:"일시정지",won:"스테이지 완료",lost:"게임 종료"})[spState];
+      spUI.start.textContent=spState==="won"?"▶ 다음 스테이지":spState==="paused"?"▶ 계속하기":spState==="lost"?"↻ 다시 도전":"▶ 게임 시작";
+      spUI.start.disabled=spState==="playing";
+      spUI.hint.textContent=`💡 힌트 (${spHints})`;spUI.hint.disabled=spState!=="playing"||spHints<=0;
+      spUI.pause.textContent=spState==="paused"?"▶ 재개":"⏸ 일시정지";
+      spUI.pause.disabled=!(["playing","paused"].includes(spState));
+    }
+    function spTick(){
+      if(spState!=="playing"||activeGame!=="spot")return;
+      spRemaining=Math.max(0,(spDeadline-performance.now())/1000);
+      if(spRemaining<=0){spRemaining=0;spFail("시간 초과! 제한시간 내에 모든 차이를 찾지 못했어요.");}
+      else spUpdate();
+    }
+    function spStartClock(){spDeadline=performance.now()+spRemaining*1000;spStopTimer();spTimer=setInterval(spTick,180);}
+    function spStart(){
+      if(spState==="won"){spStage++;spMakeStage();}
+      if(spState==="lost")spReset();
+      if(spState==="ready"||spState==="paused"){
+        spState="playing";spStartClock();spSetMessage("🔎 서로 다른 부분을 찾아 양쪽 그림 중 어느 곳이든 클릭하세요!");spDraw();spUpdate();
+      }
+    }
+    function spPause(){
+      if(spState==="playing"){
+        spRemaining=Math.max(0,(spDeadline-performance.now())/1000);spStopTimer();spCancelHint();
+        spState="paused";spSetMessage("⏸ 일시정지 중입니다. 계속하기를 눌러 재개하세요.");spDraw();spUpdate();
+      }else if(spState==="paused")spStart();
+    }
+    function spSwitchVisibility(show){if(!show&&spState==="playing")spPause();}
+    function spFinish(){
+      spState="won";spStopTimer();spCancelHint();
+      const award=Math.ceil(spRemaining)*spConf().bonus+150*spConf().bonus;
+      spScore+=award;spSaveBest();spDraw();spUpdate();
+      spSetMessage(`🎉 ${spStage}스테이지 성공! +${award.toLocaleString()}점 · 다음 스테이지 버튼으로 계속 도전하세요.`,"won");
+    }
+    function spFail(reason){
+      spState="lost";spStopTimer();spCancelHint();spSaveBest();spDraw();spUpdate();
+      spSetMessage(`💔 ${reason} ${spStage}스테이지에서 종료 · 최종 점수 ${spScore.toLocaleString()}점. 다시 도전해 보세요!`,"lost");
+    }
+    function spPick(event,side){
+      if(spState!=="playing")return;
+      const rect=event.currentTarget.getBoundingClientRect(),x=(event.clientX-rect.left)*600/rect.width,y=(event.clientY-rect.top)*400/rect.height;
+      const scene=SP_SCENES[spSceneIndex];
+      const matches=spActive.map(i=>({i,d:scene.diffs[i]})).filter(z=>Math.hypot(x-z.d.x,y-z.d.y)<=z.d.r+7);
+      matches.sort((a,b)=>Math.hypot(x-a.d.x,y-a.d.y)-Math.hypot(x-b.d.x,y-b.d.y));
+      const chosen=matches.find(z=>!spFound.has(z.i));
+      if(chosen){
+        spFound.add(chosen.i);spScore+=100*spConf().bonus;spCancelHint();
+        if(spFound.size===spActive.length){spFinish();return;}
+        spSetMessage(`✅ 정답! ${spFound.size}/${spActive.length}곳을 찾았어요. 나머지도 찾아보세요!`);
+        spDraw();spUpdate();return;
+      }
+      // Touch/mouse double taps on already-solved differences are not penalized.
+      if(matches.length)return;
+      const now=performance.now();if(now-spLastMisclick<350)return;spLastMisclick=now;
+      spMistakes++;if(spMistakes>=spConf().misses){spFail("실수 허용 횟수를 초과했어요.");return;}
+      spSetMessage(`❌ 그 부분은 같아요! 실수 ${spMistakes}/${spConf().misses}회 · 다시 잘 살펴보세요.`);spUpdate();
+    }
+    function spHint(){
+      if(spState!=="playing"||spHints<=0)return;
+      spHints--;spCancelHint();const remaining=spActive.filter(i=>!spFound.has(i));
+      spHintIndex=remaining[Math.floor(Math.random()*remaining.length)];spDraw();spUpdate();
+      spSetMessage("💡 오른쪽 그림에서 빛나는 동그라미 주변을 살펴보세요. 힌트는 잠시 후 사라져요.");
+      spHintTimer=setTimeout(()=>{spHintIndex=-1;spHintTimer=null;spDraw();},4500);
+    }
+    spUI.left.addEventListener("click",e=>spPick(e,"left"));
+    spUI.right.addEventListener("click",e=>spPick(e,"right"));
+    spUI.start.addEventListener("click",spStart);
+    spUI.pause.addEventListener("click",spPause);
+    spUI.restart.addEventListener("click",spReset);
+    spUI.hint.addEventListener("click",spHint);
+    spUI.difficulty.addEventListener("change",spReset);
+    window.addEventListener("keydown",e=>{
+      if(activeGame!=="spot"||e.repeat||["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName))return;
+      if(e.code==="KeyR"){e.preventDefault();spReset();}
+      if(e.code==="KeyH"){e.preventDefault();spHint();}
+      if(e.code==="Space"){e.preventDefault();spPause();}
+    });
+    window.addEventListener("blur",()=>{if(activeGame==="spot"&&spState==="playing")spPause();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden&&activeGame==="spot"&&spState==="playing")spPause();});
+    spReset();
+
+  </script>
+</body>
+</html>
